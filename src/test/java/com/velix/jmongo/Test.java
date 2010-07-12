@@ -1,6 +1,5 @@
 package com.velix.jmongo;
 
-
 import com.velix.bson.BSONDocument;
 import com.velix.jmongo.impl.MongoImpl;
 
@@ -30,7 +29,7 @@ public class Test {
 		// connection.send(command1);
 		// IncomingMessage message1 = command1.getIncomingMessage();
 		// System.out.println(message1);
-		Mongo mongo = new MongoImpl("127.0.0.1", 27017);
+		Mongo mongo = new MongoImpl("127.0.0.1", 27017, new Configuration());
 		MongoDB db = mongo.getDB("goojia");
 		MongoCollection collection = db.getCollection("goojia");
 		BSONDocument query = new BSONDocument();

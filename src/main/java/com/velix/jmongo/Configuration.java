@@ -1,22 +1,10 @@
 package com.velix.jmongo;
 
-public class Configuration {
-	private static Configuration intance;
+import org.apache.commons.pool.impl.GenericObjectPool.Config;
 
-	private int maxConnectRetry;
+public class Configuration extends Config {
 
-	public int getMaxConnectRetry() {
-		return maxConnectRetry;
+	public Configuration() {
 	}
 
-	public void setMaxConnectRetry(int maxConnectRetry) {
-		this.maxConnectRetry = maxConnectRetry;
-	}
-
-	public static Configuration getInstance() {
-		if (null == intance) {
-			intance = new Configuration();
-		}
-		return intance;
-	}
 }

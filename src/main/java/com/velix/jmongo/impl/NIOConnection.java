@@ -11,8 +11,6 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
-
-import com.velix.jmongo.Configuration;
 import com.velix.jmongo.Connection;
 import com.velix.jmongo.Protocal;
 import com.velix.jmongo.protocal.IncomingMessage;
@@ -65,8 +63,7 @@ public class NIOConnection implements Connection {
 				return;
 			} catch (IOException e) {
 				this.retryCount++;
-				if (this.retryCount < Configuration.getInstance()
-						.getMaxConnectRetry()) {
+				if (this.retryCount >= 3) {
 					LOG.warn("connect failed, retry for the " + this.retryCount
 							+ "th time ...");
 				} else {

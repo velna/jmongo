@@ -8,6 +8,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.commons.pool.PoolableObjectFactory;
 import org.apache.commons.pool.impl.GenericObjectPool;
 
+import com.velix.jmongo.Configuration;
 import com.velix.jmongo.ConnectionPool;
 import com.velix.jmongo.Mongo;
 import com.velix.jmongo.MongoAdmin;
@@ -28,10 +29,15 @@ public class MongoImpl implements Mongo {
 
 	private InetSocketAddress address;
 
-	public MongoImpl(String host, int port) {
+	private Configuration configuration;
+
+	public MongoImpl(String host, int port, Configuration configuration) {
 		address = new InetSocketAddress(host, port);
+		this.configuration = configuration;
 		PoolableObjectFactory factory = new PoolableConnectionFactory(address);
-		connectionPool = new ConnectionPoolImpl(new GenericObjectPool(factory));
+		connectionPool = new ConnectionPoolImpl(new GenericObjectPool(factory,
+				this.configuration));
+
 	}
 
 	@Override

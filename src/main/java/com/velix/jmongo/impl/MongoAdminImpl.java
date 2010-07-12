@@ -1,5 +1,6 @@
 package com.velix.jmongo.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.velix.bson.BSONDocument;
@@ -15,6 +16,7 @@ public class MongoAdminImpl extends MongoDBImpl implements MongoAdmin {
 		super(connectionPool, "admin", mongo);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public List<String> getDBNames() throws MongoException {
 		BSONDocument cmd = new BSONDocument();
@@ -23,9 +25,13 @@ public class MongoAdminImpl extends MongoDBImpl implements MongoAdmin {
 		if (!result.isOk()) {
 			throw new MongoException(result.getErrorMessage());
 		}
-		// Array dbList = (Array) result.get("databases");
-		// TODO
-		return null;
+		List<BSONDocument> dbList = (List<BSONDocument>) result.getFirstDoc()
+				.getArray("databases");
+		List<String> ret = new ArrayList<String>(dbList.size());
+		for (BSONDocument doc : dbList) {
+			ret.add(doc.getString("name"));
+		}
+		return ret;
 	}
 
 	public Mongo getMongo() {
