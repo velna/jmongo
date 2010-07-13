@@ -1,7 +1,6 @@
-package com.velix.bson;
+package com.velix.bson.io;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -12,30 +11,36 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import com.velix.bson.BSON;
+import com.velix.bson.BSONDocument;
+import com.velix.bson.Binary;
+import com.velix.bson.CodeWS;
+import com.velix.bson.ElementType;
+import com.velix.bson.JavascriptCode;
+import com.velix.bson.JavascriptCodeWS;
+import com.velix.bson.ObjectId;
+import com.velix.bson.Symbol;
+import com.velix.bson.Timestamp;
 import com.velix.bson.Binary.SubType;
 import com.velix.bson.util.BSONUtils;
 
+public class BSONCodec {
 
-
-public class SimpleTransCoder implements TransCoder {
-
-	@Override
-	public BSONDocument decode(byte[] bs) throws IOException {
+	public static BSONDocument decode(byte[] bs) throws IOException {
 		if (null == bs) {
 			return null;
 		}
 		return decode0(new BSONInputStream(new ByteArrayInputStream(bs)));
 	}
 
-	@Override
-	public BSONDocument decode(InputStream in) throws IOException {
+	public static BSONDocument decode(InputStream in) throws IOException {
 		if (null == in) {
 			return null;
 		}
 		return decode0(new BSONInputStream(in));
 	}
 
-	private BSONDocument decode0(BSONInputStream in) throws IOException {
+	private static BSONDocument decode0(BSONInputStream in) throws IOException {
 		in.readInteger();
 		BSONDocument document = new BSONDocument();
 		byte typeValue;
@@ -152,44 +157,35 @@ public class SimpleTransCoder implements TransCoder {
 		return document;
 	}
 
-	@Override
-	public byte[] encode(BSONDocument document) throws IOException {
+	public static byte[] encode(BSONDocument document) throws IOException {
 		if (null == document) {
 			return new byte[] { 5, 0 };
 		}
-		List<byte[]> dataList = new ArrayList<byte[]>(document.size());
-		int size = 5;
+		BSONOutputStream out = new BSONOutputStream(1024);
+		out.writeInteger(0);
 		for (Map.Entry<String, Object> entry : document.entrySet()) {
 			byte[] bs = encodeEntry(entry);
 			if (null != bs) {
-				dataList.add(bs);
+				out.write(bs);
 			}
-			size += bs.length;
-		}
-		ByteArrayOutputStream bsonOut = new ByteArrayOutputStream(size);
-		BSONOutputStream out = new BSONOutputStream(bsonOut);
-		out.writeInteger(size);
-		for (byte[] bs : dataList) {
-			out.write(bs);
 		}
 		out.write(0);
-		return bsonOut.toByteArray();
+		out.set(0, out.size());
+		return out.toByteArray();
 	}
 
-	@Override
-	public void encode(BSONDocument document, OutputStream out)
+	public static void encode(BSONDocument document, OutputStream out)
 			throws IOException {
 		out.write(encode(document));
 	}
 
-	private byte[] encodeEntry(Map.Entry<String, Object> entry)
+	private static byte[] encodeEntry(Map.Entry<String, Object> entry)
 			throws IOException {
 		String name = entry.getKey();
 		if (null == name) {
 			return null;
 		}
-		ByteArrayOutputStream bsonOut = new ByteArrayOutputStream(1024);
-		BSONOutputStream out = new BSONOutputStream(bsonOut);
+		BSONOutputStream out = new BSONOutputStream(1024);
 
 		Object[] typeInfo = getTypeInfo(entry.getValue());
 		ElementType elementType = (ElementType) typeInfo[0];
@@ -267,10 +263,10 @@ public class SimpleTransCoder implements TransCoder {
 			// TODO: other flags ?
 			break;
 		}
-		return bsonOut.toByteArray();
+		return out.toByteArray();
 	}
 
-	private Object[] getTypeInfo(Object element) throws IOException {
+	private static Object[] getTypeInfo(Object element) throws IOException {
 		Object[] ret = new Object[2];
 		if (null == element) {
 			ret[0] = ElementType.NULL;

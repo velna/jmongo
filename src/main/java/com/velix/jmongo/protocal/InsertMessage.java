@@ -5,9 +5,8 @@ import java.io.OutputStream;
 import java.util.List;
 
 import com.velix.bson.BSONDocument;
-import com.velix.bson.BSONOutputStream;
-import com.velix.bson.TransCoderFactory;
-
+import com.velix.bson.io.BSONCodec;
+import com.velix.bson.io.BSONOutputStream;
 
 public class InsertMessage implements OutgoingMessage, MongoMessage {
 
@@ -17,28 +16,27 @@ public class InsertMessage implements OutgoingMessage, MongoMessage {
 	private List<BSONDocument> documents;
 
 	public InsertMessage() {
-		messageHeader = new MessageHeader();
+		messageHeader = new MessageHeader(OperationCode.OP_INSERT);
 	}
 
 	@Override
 	public void write(OutputStream output) throws IOException {
-		BSONOutputStream out = new BSONOutputStream(output);
+		BSONOutputStream out = new BSONOutputStream(1024);
 		messageHeader.write(out);
 		out.writeInteger(0);
 		out.writeCString(this.fullCollectionName);
 		if (null != documents) {
 			for (BSONDocument doc : documents) {
-				out.write(TransCoderFactory.getInstance().encode(doc));
+				byte[] data = BSONCodec.encode(doc);
+				out.write(data);
 			}
 		}
+		out.set(0, out.size());
+		out.writeTo(output);
 	}
 
 	public MessageHeader getMessageHeader() {
 		return messageHeader;
-	}
-
-	public void setMessageHeader(MessageHeader messageHeader) {
-		this.messageHeader = messageHeader;
 	}
 
 	public String getFullCollectionName() {

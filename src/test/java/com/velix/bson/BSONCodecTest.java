@@ -4,36 +4,31 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.velix.bson.BSONDocument;
-import com.velix.bson.SimpleTransCoder;
-import com.velix.bson.util.HexDump;
-
 import junit.framework.TestCase;
 
-public class SimpleTransCoderTest extends TestCase {
+import com.velix.bson.io.BSONCodec;
+import com.velix.bson.util.HexDump;
 
-	private SimpleTransCoder transCoder = null;
+public class BSONCodecTest extends TestCase {
 
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		transCoder = new SimpleTransCoder();
 	}
 
 	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
-		transCoder = null;
 	}
 
 	public void _testEncode() throws IOException {
 		BSONDocument doc = new BSONDocument();
 		doc.put("hello", "world");
-		byte[] bs = transCoder.encode(doc);
+		byte[] bs = BSONCodec.encode(doc);
 		HexDump.dump(bs);
-		doc = transCoder.decode(bs);
+		doc = BSONCodec.decode(bs);
 		System.out.println(doc);
-		bs = transCoder.encode(doc);
+		bs = BSONCodec.encode(doc);
 		HexDump.dump(bs);
 	}
 
@@ -45,11 +40,11 @@ public class SimpleTransCoderTest extends TestCase {
 		list.add(5.05);
 		list.add(1986);
 		doc.put("BSON", list);
-		byte[] bs = transCoder.encode(doc);
+		byte[] bs = BSONCodec.encode(doc);
 		HexDump.dump(bs);
-		doc = transCoder.decode(bs);
+		doc = BSONCodec.decode(bs);
 		System.out.println(doc);
-		bs = transCoder.encode(doc);
+		bs = BSONCodec.encode(doc);
 		HexDump.dump(bs);
 	}
 

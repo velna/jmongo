@@ -1,4 +1,4 @@
-package com.velix.bson;
+package com.velix.bson.io;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

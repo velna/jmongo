@@ -4,10 +4,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import com.velix.bson.BSONDocument;
-import com.velix.bson.BSONOutputStream;
-import com.velix.bson.TransCoderFactory;
+import com.velix.bson.io.BSONCodec;
+import com.velix.bson.io.BSONOutputStream;
 import com.velix.bson.util.BSONUtils;
-
 
 public class QueryMessage implements OutgoingMessage, MongoMessage {
 
@@ -21,43 +20,27 @@ public class QueryMessage implements OutgoingMessage, MongoMessage {
 	private BSONDocument returnFieldSelector;
 
 	public QueryMessage() {
-		messageHeader = new MessageHeader();
+		messageHeader = new MessageHeader(OperationCode.OP_QUERY);
 	}
 
 	@Override
 	public void write(OutputStream output) throws IOException {
-		BSONOutputStream out = new BSONOutputStream(output);
-		byte[] queryBytes = TransCoderFactory.getInstance().encode(query);
-		int size = messageHeader.size() + 12
-				+ BSONUtils.cstringByteLength(this.fullCollectionName)
-				+ queryBytes.length;
-		byte[] returnFieldSelectorBytes = null;
-		if (null != returnFieldSelector) {
-			returnFieldSelectorBytes = TransCoderFactory.getInstance().encode(
-					returnFieldSelector);
-			size += returnFieldSelectorBytes.length;
-		}
-
-		messageHeader.setMessageLength(size);
-		messageHeader.setOpCode(OperationCode.OP_QUERY.getValue());
-
+		BSONOutputStream out = new BSONOutputStream(1024);
 		messageHeader.write(out);
 		out.writeInteger(options);
 		out.writeCString(this.fullCollectionName);
 		out.writeInteger(numberToSkip);
 		out.writeInteger(numberToReturn);
-		out.write(queryBytes);
+		out.write(BSONCodec.encode(query));
 		if (null != returnFieldSelector) {
-			out.write(returnFieldSelectorBytes);
+			out.write(BSONCodec.encode(returnFieldSelector));
 		}
+		out.set(0, out.size());
+		out.writeTo(output);
 	}
 
 	public MessageHeader getMessageHeader() {
 		return messageHeader;
-	}
-
-	public void setMessageHeader(MessageHeader messageHeader) {
-		this.messageHeader = messageHeader;
 	}
 
 	public String getFullCollectionName() {

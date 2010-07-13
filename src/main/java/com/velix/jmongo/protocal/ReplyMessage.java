@@ -2,14 +2,12 @@ package com.velix.jmongo.protocal;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.velix.bson.BSONDocument;
-import com.velix.bson.BSONInputStream;
-import com.velix.bson.TransCoderFactory;
-
+import com.velix.bson.io.BSONCodec;
+import com.velix.bson.io.BSONInputStream;
 
 public class ReplyMessage implements IncomingMessage, MongoMessage {
 
@@ -22,13 +20,7 @@ public class ReplyMessage implements IncomingMessage, MongoMessage {
 	private List<BSONDocument> documents;
 
 	public ReplyMessage() {
-		messageHeader = new MessageHeader();
-	}
-
-	@Override
-	public boolean read(ByteBuffer buffer) {
-		// TODO Auto-generated method stub
-		return false;
+		messageHeader = new MessageHeader(OperationCode.OP_REPLY);
 	}
 
 	public void read(InputStream in) throws IOException {
@@ -40,16 +32,12 @@ public class ReplyMessage implements IncomingMessage, MongoMessage {
 		numberReturned = bsonIn.readInteger();
 		documents = new ArrayList<BSONDocument>(numberReturned);
 		for (int i = 0; i < numberReturned; i++) {
-			documents.add(TransCoderFactory.getInstance().decode(in));
+			documents.add(BSONCodec.decode(in));
 		}
 	}
 
 	public MessageHeader getMessageHeader() {
 		return messageHeader;
-	}
-
-	public void setMessageHeader(MessageHeader messageHeader) {
-		this.messageHeader = messageHeader;
 	}
 
 	public int getResponseFlag() {

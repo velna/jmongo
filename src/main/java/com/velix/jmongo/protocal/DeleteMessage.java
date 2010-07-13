@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import com.velix.bson.BSONDocument;
-import com.velix.bson.BSONOutputStream;
-import com.velix.bson.TransCoderFactory;
+import com.velix.bson.io.BSONCodec;
+import com.velix.bson.io.BSONOutputStream;
 import com.velix.bson.util.BSONUtils;
 
 
@@ -18,26 +18,24 @@ public class DeleteMessage implements OutgoingMessage, MongoMessage {
 	private BSONDocument selector;
 
 	public DeleteMessage() {
-		messageHeader = new MessageHeader();
+		messageHeader = new MessageHeader(OperationCode.OP_DELETE);
 		selector = new BSONDocument();
 	}
 
 	@Override
 	public void write(OutputStream output) throws IOException {
-		BSONOutputStream out = new BSONOutputStream(output);
+		BSONOutputStream out = new BSONOutputStream(1024);
 		messageHeader.write(out);
 		out.writeInteger(0);
 		out.writeCString(this.fullCollectionName);
 		out.writeInteger(this.flags);
-		out.write(TransCoderFactory.getInstance().encode(selector));
+		out.write(BSONCodec.encode(selector));
+		out.set(0, out.size());
+		out.writeTo(output);
 	}
 
 	public MessageHeader getMessageHeader() {
 		return messageHeader;
-	}
-
-	public void setMessageHeader(MessageHeader messageHeader) {
-		this.messageHeader = messageHeader;
 	}
 
 	public String getFullCollectionName() {

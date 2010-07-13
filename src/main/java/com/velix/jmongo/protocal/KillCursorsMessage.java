@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 
-import com.velix.bson.BSONOutputStream;
+import com.velix.bson.io.BSONOutputStream;
 
 
 public class KillCursorsMessage implements OutgoingMessage, MongoMessage {
@@ -15,7 +15,7 @@ public class KillCursorsMessage implements OutgoingMessage, MongoMessage {
 	private List<Long> cursorIDs;
 
 	public KillCursorsMessage() {
-		messageHeader = new MessageHeader();
+		messageHeader = new MessageHeader(OperationCode.OP_KILL_CURSORS);
 	}
 
 	public MessageHeader getMessageHeader() {
@@ -24,7 +24,7 @@ public class KillCursorsMessage implements OutgoingMessage, MongoMessage {
 
 	@Override
 	public void write(OutputStream output) throws IOException {
-		BSONOutputStream out = new BSONOutputStream(output);
+		BSONOutputStream out = new BSONOutputStream(1024);
 		messageHeader.write(out);
 		out.writeInteger(0);
 		out.writeInteger(numberOfCursorIDs);
@@ -33,10 +33,8 @@ public class KillCursorsMessage implements OutgoingMessage, MongoMessage {
 				out.writeLong(id);
 			}
 		}
-	}
-
-	public void setMessageHeader(MessageHeader messageHeader) {
-		this.messageHeader = messageHeader;
+		out.set(0, out.size());
+		out.writeTo(output);
 	}
 
 	public int getNumberOfCursorIDs() {

@@ -3,8 +3,7 @@ package com.velix.jmongo.protocal;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import com.velix.bson.BSONOutputStream;
-
+import com.velix.bson.io.BSONOutputStream;
 
 public class GetMoreMessage implements OutgoingMessage, MongoMessage {
 
@@ -15,25 +14,23 @@ public class GetMoreMessage implements OutgoingMessage, MongoMessage {
 	private long cursorID;
 
 	public GetMoreMessage() {
-		messageHeader = new MessageHeader();
+		messageHeader = new MessageHeader(OperationCode.OP_GET_MORE);
 	}
 
 	@Override
 	public void write(OutputStream output) throws IOException {
-		BSONOutputStream out = new BSONOutputStream(output);
+		BSONOutputStream out = new BSONOutputStream(1024);
 		messageHeader.write(out);
 		out.writeInteger(0);
 		out.writeCString(this.fullCollectionName);
 		out.writeInteger(this.numberToReturn);
 		out.writeLong(cursorID);
+		out.set(0, out.size());
+		out.writeTo(output);
 	}
 
 	public MessageHeader getMessageHeader() {
 		return messageHeader;
-	}
-
-	public void setMessageHeader(MessageHeader messageHeader) {
-		this.messageHeader = messageHeader;
 	}
 
 	public String getFullCollectionName() {

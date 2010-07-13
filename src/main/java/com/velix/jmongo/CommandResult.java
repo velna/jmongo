@@ -15,6 +15,7 @@ public class CommandResult {
 		if (null == docs) {
 			throw new IllegalArgumentException("docs can not be null");
 		}
+		this.docs = docs;
 		if (null != docs && docs.size() > 0) {
 			BSONDocument firstDoc = docs.get(0);
 			Double c = (Double) firstDoc.get("ok");

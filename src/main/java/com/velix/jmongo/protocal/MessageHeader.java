@@ -6,9 +6,8 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.velix.bson.BSONInputStream;
-import com.velix.bson.BSONOutputStream;
-
+import com.velix.bson.io.BSONInputStream;
+import com.velix.bson.io.BSONOutputStream;
 
 public final class MessageHeader implements Writable, Readable, Serializable {
 	private static final long serialVersionUID = 8505270142383450097L;
@@ -17,9 +16,10 @@ public final class MessageHeader implements Writable, Readable, Serializable {
 	private int messageLength;
 	private int requestID;
 	private int responseTo;
-	private int opCode;
+	private OperationCode opCode;
 
-	public MessageHeader() {
+	public MessageHeader(OperationCode opCode) {
+		this.opCode = opCode;
 		this.requestID = ID_GENERATOR.getAndIncrement();
 	}
 
@@ -29,16 +29,17 @@ public final class MessageHeader implements Writable, Readable, Serializable {
 		messageLength = bsonIn.readInteger();
 		requestID = bsonIn.readInteger();
 		responseTo = bsonIn.readInteger();
-		opCode = bsonIn.readInteger();
+		opCode = OperationCode.valueOf(bsonIn.readInteger());
 	}
 
 	@Override
 	public void write(OutputStream output) throws IOException {
-		BSONOutputStream out = new BSONOutputStream(output);
+		BSONOutputStream out = new BSONOutputStream(this.size());
 		out.writeInteger(messageLength);
 		out.writeInteger(requestID);
 		out.writeInteger(responseTo);
-		out.writeInteger(opCode);
+		out.writeInteger(opCode.getValue());
+		out.writeTo(output);
 	}
 
 	public int size() {
@@ -69,11 +70,11 @@ public final class MessageHeader implements Writable, Readable, Serializable {
 		this.responseTo = responseTo;
 	}
 
-	public int getOpCode() {
+	public OperationCode getOpCode() {
 		return opCode;
 	}
 
-	public void setOpCode(int opCode) {
+	public void setOpCode(OperationCode opCode) {
 		this.opCode = opCode;
 	}
 

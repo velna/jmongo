@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-
 import com.velix.bson.BSONDocument;
 import com.velix.jmongo.CommandResult;
 import com.velix.jmongo.Connection;
@@ -17,6 +16,8 @@ import com.velix.jmongo.MongoException;
 import com.velix.jmongo.protocal.DeleteMessage;
 import com.velix.jmongo.protocal.InsertMessage;
 import com.velix.jmongo.protocal.OutgoingMessage;
+import com.velix.jmongo.protocal.QueryMessage;
+import com.velix.jmongo.protocal.ReplyMessage;
 import com.velix.jmongo.protocal.UpdateMessage;
 
 public class MongoCollectionImpl implements MongoCollection {
@@ -25,6 +26,7 @@ public class MongoCollectionImpl implements MongoCollection {
 	private String name;
 	private MongoDB db;
 	private String fullName;
+	private boolean safeMode;
 
 	public MongoCollectionImpl(ConnectionPool pool, String fullName) {
 		this.pool = pool;
@@ -77,7 +79,7 @@ public class MongoCollectionImpl implements MongoCollection {
 		msg.setFullCollectionName(fullName);
 		msg.setSelector(query);
 		msg.setSingleRemove(singleRemove);
-		this.sendMessage(msg);
+		this.sendMessage(msg, false);
 	}
 
 	@Override
@@ -90,14 +92,25 @@ public class MongoCollectionImpl implements MongoCollection {
 		InsertMessage msg = new InsertMessage();
 		msg.setDocuments(docList);
 		msg.setFullCollectionName(fullName);
-		sendMessage(msg);
+		sendMessage(msg, this.safeMode);
 	}
 
-	private void sendMessage(OutgoingMessage msg) {
+	private void sendMessage(OutgoingMessage msg, boolean checkSafe) {
 		Connection connection = null;
 		try {
 			connection = pool.getConnection();
 			connection.send(msg);
+			if (this.safeMode) {
+				BSONDocument cmd = new BSONDocument();
+				cmd.put("getlasterror", 1);
+				QueryMessage queryMsg = new QueryMessage();
+				queryMsg.setFullCollectionName(this.db.getName() + ".$cmd");
+				queryMsg.setNumberToReturn(-1);
+				queryMsg.setQuery(cmd);
+				connection.send(queryMsg);
+				ReplyMessage reply = (ReplyMessage) connection.receive();
+				System.out.println(reply);
+			}
 		} catch (Exception e) {
 			throw new MongoException(e);
 		} finally {
@@ -120,7 +133,7 @@ public class MongoCollectionImpl implements MongoCollection {
 		msg.setUpdate(data);
 		msg.setUpsert(upsert);
 		msg.setMultiUpdate(multiUpdate);
-		sendMessage(msg);
+		sendMessage(msg, this.safeMode);
 	}
 
 	@Override
@@ -131,6 +144,16 @@ public class MongoCollectionImpl implements MongoCollection {
 	@Override
 	public String getFullName() {
 		return fullName;
+	}
+
+	@Override
+	public void setSafeMode(boolean safe) {
+		this.safeMode = safe;
+	}
+
+	@Override
+	public boolean isSafeMode() {
+		return safeMode;
 	}
 
 }

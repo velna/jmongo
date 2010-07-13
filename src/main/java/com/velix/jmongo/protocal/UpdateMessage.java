@@ -4,10 +4,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import com.velix.bson.BSONDocument;
-import com.velix.bson.BSONOutputStream;
-import com.velix.bson.TransCoderFactory;
+import com.velix.bson.io.BSONCodec;
+import com.velix.bson.io.BSONOutputStream;
 import com.velix.bson.util.BSONUtils;
-
 
 public class UpdateMessage implements OutgoingMessage, MongoMessage {
 
@@ -20,20 +19,22 @@ public class UpdateMessage implements OutgoingMessage, MongoMessage {
 	private BSONDocument update;
 
 	public UpdateMessage() {
-		messageHeader = new MessageHeader();
+		messageHeader = new MessageHeader(OperationCode.OP_UPDATE);
 		this.selector = new BSONDocument();
 		this.update = new BSONDocument();
 	}
 
 	@Override
 	public void write(OutputStream output) throws IOException {
-		BSONOutputStream out = new BSONOutputStream(output);
+		BSONOutputStream out = new BSONOutputStream(1024);
 		messageHeader.write(out);
 		out.writeInteger(0);
 		out.writeCString(this.fullCollectionName);
 		out.writeInteger(flags);
-		out.write(TransCoderFactory.getInstance().encode(selector));
-		out.write(TransCoderFactory.getInstance().encode(update));
+		out.write(BSONCodec.encode(selector));
+		out.write(BSONCodec.encode(update));
+		out.set(0, out.size());
+		out.writeTo(output);
 	}
 
 	public void setUpsert(boolean upsert) {
@@ -46,10 +47,6 @@ public class UpdateMessage implements OutgoingMessage, MongoMessage {
 
 	public MessageHeader getMessageHeader() {
 		return messageHeader;
-	}
-
-	public void setMessageHeader(MessageHeader messageHeader) {
-		this.messageHeader = messageHeader;
 	}
 
 	public String getFullCollectionName() {

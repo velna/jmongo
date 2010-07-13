@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.velix.bson.BSONDocument;
 
-
 public interface MongoCollection {
 	Cursor find(BSONDocument query);
 
@@ -24,4 +23,8 @@ public interface MongoCollection {
 	String getFullName();
 
 	MongoDB getDB();
+
+	void setSafeMode(boolean safe);
+
+	boolean isSafeMode();
 }

@@ -4,47 +4,44 @@ public enum OperationCode {
 	/**
 	 * Reply to a client request. responseTo is set
 	 */
-	OP_REPLY(1, ReplyMessage.class),
+	OP_REPLY(1),
 	/**
 	 * generic msg command followed by a string
 	 */
-	OP_MSG(1000, null),
+	OP_MSG(1000),
 	/**
 	 * update document
 	 */
-	OP_UPDATE(2001, UpdateMessage.class),
+	OP_UPDATE(2001),
 	/**
 	 * insert new document
 	 */
-	OP_INSERT(2002, InsertMessage.class),
+	OP_INSERT(2002),
 	/**
 	 * formerly used for OP_GET_BY_OID
 	 */
-	RESERVED(2003, null),
+	RESERVED(2003),
 	/**
 	 * query a collection
 	 */
-	OP_QUERY(2004, QueryMessage.class),
+	OP_QUERY(2004),
 	/**
 	 * Get more data from a query. See Cursors
 	 */
-	OP_GET_MORE(2005, GetMoreMessage.class),
+	OP_GET_MORE(2005),
 	/**
 	 * Delete documents
 	 */
-	OP_DELETE(2006, DeleteMessage.class),
+	OP_DELETE(2006),
 	/**
 	 * Tell database client is done with a cursor
 	 */
-	OP_KILL_CURSORS(2007, KillCursorsMessage.class);
+	OP_KILL_CURSORS(2007);
 
 	private final int value;
 
-	private final Class<? extends MongoMessage> clazz;
-
-	private OperationCode(int value, Class<? extends MongoMessage> clazz) {
+	private OperationCode(int value) {
 		this.value = value;
-		this.clazz = clazz;
 	}
 
 	public int getValue() {
@@ -56,17 +53,6 @@ public enum OperationCode {
 			if (code.value == value) {
 				return code;
 			}
-		}
-		return null;
-	}
-
-	public MongoMessage newMessage() {
-		try {
-			return clazz.newInstance();
-		} catch (InstantiationException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
 		}
 		return null;
 	}
