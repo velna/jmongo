@@ -109,7 +109,10 @@ public class MongoCollectionImpl implements MongoCollection {
 				queryMsg.setQuery(cmd);
 				connection.send(queryMsg);
 				ReplyMessage reply = (ReplyMessage) connection.receive();
-				System.out.println(reply);
+				CommandResult result = new CommandResult(reply.getDocuments());
+				if (!result.isOk() || null != result.get("err")) {
+					throw new MongoException(result.get("err").toString());
+				}
 			}
 		} catch (Exception e) {
 			throw new MongoException(e);
