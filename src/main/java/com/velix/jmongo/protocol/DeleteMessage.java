@@ -1,20 +1,25 @@
-package com.velix.jmongo.protocal;
+package com.velix.jmongo.protocol;
 
 import java.io.IOException;
 import java.io.OutputStream;
 
+import com.velix.bson.BSONDocument;
+import com.velix.bson.io.BSONCodec;
 import com.velix.bson.io.BSONOutputStream;
+import com.velix.bson.util.BSONUtils;
 
-public class GetMoreMessage implements OutgoingMessage, MongoMessage {
+
+public class DeleteMessage implements OutgoingMessage, MongoMessage {
 
 	private static final long serialVersionUID = -3350216587439425208L;
 	private MessageHeader messageHeader;
 	private String fullCollectionName;
-	private int numberToReturn;
-	private long cursorID;
+	private int flags;
+	private BSONDocument selector;
 
-	public GetMoreMessage() {
-		messageHeader = new MessageHeader(OperationCode.OP_GET_MORE);
+	public DeleteMessage() {
+		messageHeader = new MessageHeader(OperationCode.OP_DELETE);
+		selector = new BSONDocument();
 	}
 
 	@Override
@@ -23,8 +28,8 @@ public class GetMoreMessage implements OutgoingMessage, MongoMessage {
 		messageHeader.write(out);
 		out.writeInteger(0);
 		out.writeCString(this.fullCollectionName);
-		out.writeInteger(this.numberToReturn);
-		out.writeLong(cursorID);
+		out.writeInteger(this.flags);
+		out.write(BSONCodec.encode(selector));
 		out.set(0, out.size());
 		out.writeTo(output);
 	}
@@ -41,20 +46,24 @@ public class GetMoreMessage implements OutgoingMessage, MongoMessage {
 		this.fullCollectionName = fullCollectionName;
 	}
 
-	public int getNumberToReturn() {
-		return numberToReturn;
+	public int getFlags() {
+		return flags;
 	}
 
-	public void setNumberToReturn(int numberToReturn) {
-		this.numberToReturn = numberToReturn;
+	public void setFlags(int flags) {
+		this.flags = flags;
 	}
 
-	public long getCursorID() {
-		return cursorID;
+	public void setSingleRemove(boolean b) {
+		this.flags = (int) BSONUtils.bitSet(this.flags, 0, b);
 	}
 
-	public void setCursorID(long cursorID) {
-		this.cursorID = cursorID;
+	public BSONDocument getSelector() {
+		return selector;
+	}
+
+	public void setSelector(BSONDocument selector) {
+		this.selector = selector;
 	}
 
 }

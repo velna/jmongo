@@ -28,7 +28,7 @@ public class PoolableConnectionFactory implements PoolableObjectFactory {
 	@Override
 	public Object makeObject() throws Exception {
 		Connection connection = new NIOConnection(address,
-				MongoProtocal.PROTOCAL);
+				MongoProtocol.PROTOCOL);
 		connection.connect();
 		return connection;
 	}

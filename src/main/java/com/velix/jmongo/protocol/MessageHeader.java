@@ -1,4 +1,4 @@
-package com.velix.jmongo.protocal;
+package com.velix.jmongo.protocol;
 
 import java.io.IOException;
 import java.io.InputStream;

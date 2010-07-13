@@ -11,10 +11,10 @@ import com.velix.bson.BSONDocument;
 import com.velix.jmongo.Connection;
 import com.velix.jmongo.Cursor;
 import com.velix.jmongo.MongoException;
-import com.velix.jmongo.protocal.GetMoreMessage;
-import com.velix.jmongo.protocal.KillCursorsMessage;
-import com.velix.jmongo.protocal.QueryMessage;
-import com.velix.jmongo.protocal.ReplyMessage;
+import com.velix.jmongo.protocol.GetMoreMessage;
+import com.velix.jmongo.protocol.KillCursorsMessage;
+import com.velix.jmongo.protocol.QueryMessage;
+import com.velix.jmongo.protocol.ReplyMessage;
 
 public class CursorIterator implements Iterator<BSONDocument> {
 

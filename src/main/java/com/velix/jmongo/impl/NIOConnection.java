@@ -12,9 +12,9 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 
 import com.velix.jmongo.Connection;
-import com.velix.jmongo.Protocal;
-import com.velix.jmongo.protocal.IncomingMessage;
-import com.velix.jmongo.protocal.OutgoingMessage;
+import com.velix.jmongo.Protocol;
+import com.velix.jmongo.protocol.IncomingMessage;
+import com.velix.jmongo.protocol.OutgoingMessage;
 
 public class NIOConnection implements Connection {
 	private static final Logger LOG = Logger.getLogger(NIOConnection.class);
@@ -23,26 +23,26 @@ public class NIOConnection implements Connection {
 	private Selector selector;
 	private ByteBuffer buffer;
 	private int retryCount;
-	private Protocal protocal;
+	private Protocol protocol;
 	private InetSocketAddress address;
 
-	public NIOConnection(String host, int port, Protocal protocal) {
-		this(new InetSocketAddress(host, port), protocal);
+	public NIOConnection(String host, int port, Protocol protocol) {
+		this(new InetSocketAddress(host, port), protocol);
 	}
 
-	public NIOConnection(InetSocketAddress address, Protocal protocal) {
+	public NIOConnection(InetSocketAddress address, Protocol protocol) {
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("new mongo db connection");
 		}
 		this.address = address;
 		buffer = ByteBuffer.allocateDirect(4 << 20);
 		buffer.order(ByteOrder.LITTLE_ENDIAN);
-		setProtocal(protocal);
+		setProtocal(protocol);
 	}
 
 	@Override
-	public void setProtocal(Protocal protocal) {
-		this.protocal = protocal;
+	public void setProtocal(Protocol protocol) {
+		this.protocol = protocol;
 	}
 
 	@Override
@@ -110,13 +110,13 @@ public class NIOConnection implements Connection {
 
 	public IncomingMessage receive() throws IOException {
 		checkConnection();
-		return protocal.receive(channel, selector);
+		return protocol.receive(channel, selector);
 	}
 
 	@Override
 	public void send(OutgoingMessage message) throws IOException {
 		checkConnection();
-		protocal.send(message, channel, selector);
+		protocol.send(message, channel, selector);
 	}
 
 	@Override

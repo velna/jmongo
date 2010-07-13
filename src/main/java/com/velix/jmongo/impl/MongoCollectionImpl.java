@@ -13,12 +13,12 @@ import com.velix.jmongo.Cursor;
 import com.velix.jmongo.MongoCollection;
 import com.velix.jmongo.MongoDB;
 import com.velix.jmongo.MongoException;
-import com.velix.jmongo.protocal.DeleteMessage;
-import com.velix.jmongo.protocal.InsertMessage;
-import com.velix.jmongo.protocal.OutgoingMessage;
-import com.velix.jmongo.protocal.QueryMessage;
-import com.velix.jmongo.protocal.ReplyMessage;
-import com.velix.jmongo.protocal.UpdateMessage;
+import com.velix.jmongo.protocol.DeleteMessage;
+import com.velix.jmongo.protocol.InsertMessage;
+import com.velix.jmongo.protocol.OutgoingMessage;
+import com.velix.jmongo.protocol.QueryMessage;
+import com.velix.jmongo.protocol.ReplyMessage;
+import com.velix.jmongo.protocol.UpdateMessage;
 
 public class MongoCollectionImpl implements MongoCollection {
 

@@ -5,12 +5,11 @@ import java.io.IOException;
 import org.apache.commons.pool.ObjectPool;
 import org.apache.log4j.Logger;
 
-
 import com.velix.jmongo.Connection;
 import com.velix.jmongo.ConnectionPool;
-import com.velix.jmongo.Protocal;
-import com.velix.jmongo.protocal.IncomingMessage;
-import com.velix.jmongo.protocal.OutgoingMessage;
+import com.velix.jmongo.Protocol;
+import com.velix.jmongo.protocol.IncomingMessage;
+import com.velix.jmongo.protocol.OutgoingMessage;
 
 public class ConnectionPoolImpl implements ConnectionPool {
 	private static final Logger LOG = Logger
@@ -72,8 +71,8 @@ public class ConnectionPoolImpl implements ConnectionPool {
 		}
 
 		@Override
-		public void setProtocal(Protocal protocal) {
-			connection.setProtocal(protocal);
+		public void setProtocal(Protocol protocol) {
+			connection.setProtocal(protocol);
 		}
 
 	}

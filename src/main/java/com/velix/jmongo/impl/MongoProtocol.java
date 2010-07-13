@@ -15,18 +15,18 @@ import java.util.List;
 import com.velix.bson.BSONDocument;
 import com.velix.bson.util.BSONUtils;
 import com.velix.jmongo.MongoException;
-import com.velix.jmongo.Protocal;
-import com.velix.jmongo.protocal.IncomingMessage;
-import com.velix.jmongo.protocal.OutgoingMessage;
-import com.velix.jmongo.protocal.ReplyMessage;
+import com.velix.jmongo.Protocol;
+import com.velix.jmongo.protocol.IncomingMessage;
+import com.velix.jmongo.protocol.OutgoingMessage;
+import com.velix.jmongo.protocol.ReplyMessage;
 
-public class MongoProtocal implements Protocal {
+public class MongoProtocol implements Protocol {
 
-	public final static Protocal PROTOCAL = new MongoProtocal();
+	public final static Protocol PROTOCOL = new MongoProtocol();
 
 	private final static int HEAD_SIZE = 4;
 
-	private MongoProtocal() {
+	private MongoProtocol() {
 
 	}
 

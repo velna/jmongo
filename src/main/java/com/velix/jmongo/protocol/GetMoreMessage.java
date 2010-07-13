@@ -1,22 +1,20 @@
-package com.velix.jmongo.protocal;
+package com.velix.jmongo.protocol;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.List;
 
-import com.velix.bson.BSONDocument;
-import com.velix.bson.io.BSONCodec;
 import com.velix.bson.io.BSONOutputStream;
 
-public class InsertMessage implements OutgoingMessage, MongoMessage {
+public class GetMoreMessage implements OutgoingMessage, MongoMessage {
 
 	private static final long serialVersionUID = -3350216587439425208L;
 	private MessageHeader messageHeader;
 	private String fullCollectionName;
-	private List<BSONDocument> documents;
+	private int numberToReturn;
+	private long cursorID;
 
-	public InsertMessage() {
-		messageHeader = new MessageHeader(OperationCode.OP_INSERT);
+	public GetMoreMessage() {
+		messageHeader = new MessageHeader(OperationCode.OP_GET_MORE);
 	}
 
 	@Override
@@ -25,12 +23,8 @@ public class InsertMessage implements OutgoingMessage, MongoMessage {
 		messageHeader.write(out);
 		out.writeInteger(0);
 		out.writeCString(this.fullCollectionName);
-		if (null != documents) {
-			for (BSONDocument doc : documents) {
-				byte[] data = BSONCodec.encode(doc);
-				out.write(data);
-			}
-		}
+		out.writeInteger(this.numberToReturn);
+		out.writeLong(cursorID);
 		out.set(0, out.size());
 		out.writeTo(output);
 	}
@@ -47,12 +41,20 @@ public class InsertMessage implements OutgoingMessage, MongoMessage {
 		this.fullCollectionName = fullCollectionName;
 	}
 
-	public List<BSONDocument> getDocuments() {
-		return documents;
+	public int getNumberToReturn() {
+		return numberToReturn;
 	}
 
-	public void setDocuments(List<BSONDocument> documents) {
-		this.documents = documents;
+	public void setNumberToReturn(int numberToReturn) {
+		this.numberToReturn = numberToReturn;
+	}
+
+	public long getCursorID() {
+		return cursorID;
+	}
+
+	public void setCursorID(long cursorID) {
+		this.cursorID = cursorID;
 	}
 
 }

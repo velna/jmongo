@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 
-import com.velix.jmongo.protocal.IncomingMessage;
-import com.velix.jmongo.protocal.OutgoingMessage;
+import com.velix.jmongo.protocol.IncomingMessage;
+import com.velix.jmongo.protocol.OutgoingMessage;
 
 
-public interface Protocal {
+public interface Protocol {
 	public IncomingMessage receive(SocketChannel channel, Selector selector)
 			throws IOException;
 

@@ -1,4 +1,4 @@
-package com.velix.jmongo.protocal;
+package com.velix.jmongo.protocol;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -8,18 +8,20 @@ import com.velix.bson.io.BSONCodec;
 import com.velix.bson.io.BSONOutputStream;
 import com.velix.bson.util.BSONUtils;
 
+public class UpdateMessage implements OutgoingMessage, MongoMessage {
 
-public class DeleteMessage implements OutgoingMessage, MongoMessage {
+	private static final long serialVersionUID = -5278293474222136247L;
 
-	private static final long serialVersionUID = -3350216587439425208L;
 	private MessageHeader messageHeader;
 	private String fullCollectionName;
 	private int flags;
 	private BSONDocument selector;
+	private BSONDocument update;
 
-	public DeleteMessage() {
-		messageHeader = new MessageHeader(OperationCode.OP_DELETE);
-		selector = new BSONDocument();
+	public UpdateMessage() {
+		messageHeader = new MessageHeader(OperationCode.OP_UPDATE);
+		this.selector = new BSONDocument();
+		this.update = new BSONDocument();
 	}
 
 	@Override
@@ -28,10 +30,19 @@ public class DeleteMessage implements OutgoingMessage, MongoMessage {
 		messageHeader.write(out);
 		out.writeInteger(0);
 		out.writeCString(this.fullCollectionName);
-		out.writeInteger(this.flags);
+		out.writeInteger(flags);
 		out.write(BSONCodec.encode(selector));
+		out.write(BSONCodec.encode(update));
 		out.set(0, out.size());
 		out.writeTo(output);
+	}
+
+	public void setUpsert(boolean upsert) {
+		this.flags = (int) BSONUtils.bitSet(this.flags, 0, upsert);
+	}
+
+	public void setMultiUpdate(boolean multiUpdate) {
+		this.flags = (int) BSONUtils.bitSet(this.flags, 1, multiUpdate);
 	}
 
 	public MessageHeader getMessageHeader() {
@@ -54,10 +65,6 @@ public class DeleteMessage implements OutgoingMessage, MongoMessage {
 		this.flags = flags;
 	}
 
-	public void setSingleRemove(boolean b) {
-		this.flags = (int) BSONUtils.bitSet(this.flags, 0, b);
-	}
-
 	public BSONDocument getSelector() {
 		return selector;
 	}
@@ -66,4 +73,11 @@ public class DeleteMessage implements OutgoingMessage, MongoMessage {
 		this.selector = selector;
 	}
 
+	public BSONDocument getUpdate() {
+		return update;
+	}
+
+	public void setUpdate(BSONDocument update) {
+		this.update = update;
+	}
 }
