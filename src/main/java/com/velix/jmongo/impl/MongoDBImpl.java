@@ -9,6 +9,7 @@ import com.velix.jmongo.CommandResult;
 import com.velix.jmongo.ConnectionPool;
 import com.velix.jmongo.Mongo;
 import com.velix.jmongo.MongoCollection;
+import com.velix.jmongo.MongoCommandFailureException;
 import com.velix.jmongo.MongoDB;
 import com.velix.jmongo.MongoException;
 
@@ -27,21 +28,21 @@ public class MongoDBImpl implements MongoDB {
 
 	@Override
 	public MongoCollection createCollection(String collectionName,
-			BSONDocument options) {
+			BSONDocument options) throws MongoCommandFailureException {
 		if (null != options) {
 			BSONDocument cmd = new BSONDocument();
 			cmd.put("create ", collectionName);
 			cmd.putAll(options);
 			CommandResult result = runCommand(cmd, true);
 			if (!result.isOk()) {
-				throw new MongoException(result.getErrorMessage());
+				throw new MongoCommandFailureException(result.getErrorMessage());
 			}
 		}
 		return getCollection(collectionName);
 	}
 
 	@Override
-	public boolean drop() {
+	public boolean drop() throws MongoCommandFailureException {
 		BSONDocument cmd = new BSONDocument();
 		cmd.put("dropDatabase ", 1);
 		CommandResult result = runCommand(cmd, true);
@@ -49,7 +50,8 @@ public class MongoDBImpl implements MongoDB {
 	}
 
 	@Override
-	public boolean dropCollection(String collectionName) {
+	public boolean dropCollection(String collectionName)
+			throws MongoCommandFailureException {
 		BSONDocument cmd = new BSONDocument();
 		cmd.put("drop", name);
 		CommandResult result = runCommand(cmd, true);
@@ -57,7 +59,8 @@ public class MongoDBImpl implements MongoDB {
 	}
 
 	@Override
-	public CommandResult runCommand(BSONDocument cmd, boolean shouldReply) {
+	public CommandResult runCommand(BSONDocument cmd, boolean shouldReply)
+			throws MongoCommandFailureException {
 		MongoCollection collection = this.getCollection("$cmd");
 		return new CommandResult(collection.find(cmd).limit(-1).toList());
 	}

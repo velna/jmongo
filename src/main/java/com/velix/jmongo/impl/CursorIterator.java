@@ -6,9 +6,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import org.apache.log4j.Logger;
 
 import com.velix.bson.BSONDocument;
 import com.velix.jmongo.Connection;
+import com.velix.jmongo.ConnectionPool;
 import com.velix.jmongo.Cursor;
 import com.velix.jmongo.MongoException;
 import com.velix.jmongo.protocol.GetMoreMessage;
@@ -18,19 +20,21 @@ import com.velix.jmongo.protocol.ReplyMessage;
 
 public class CursorIterator implements Iterator<BSONDocument> {
 
+	private final static Logger LOG = Logger.getLogger(CursorIterator.class);
+
 	private Boolean hasNext = null;
 	private ReplyMessage replyMessage;
 	private QueryMessage queryMessage;
 	private Iterator<BSONDocument> resultIterator;
-	private Connection connection;
+	private ConnectionPool pool;
 	private boolean getMore = false;
 	private boolean closed = false;
 	private Cursor cursor;
 	private int numberReturned;
 	private int numberToReturn;
 
-	public CursorIterator(Connection connection, Cursor cursor) {
-		this.connection = connection;
+	public CursorIterator(ConnectionPool pool, Cursor cursor) {
+		this.pool = pool;
 		this.cursor = cursor;
 
 		// cal numberToReturn
@@ -59,7 +63,7 @@ public class CursorIterator implements Iterator<BSONDocument> {
 	}
 
 	@Override
-	public boolean hasNext() {
+	public boolean hasNext() throws IllegalStateException {
 		if (closed) {
 			return false;
 		}
@@ -77,27 +81,32 @@ public class CursorIterator implements Iterator<BSONDocument> {
 			}
 		} else {
 			try {
-				if (getMore) {
-					GetMoreMessage getMoreMessage = new GetMoreMessage();
-					getMoreMessage.setFullCollectionName(cursor.getCollection()
-							.getFullName());
-					getMoreMessage.setNumberToReturn(numberToReturn);
-					getMoreMessage.setCursorID(replyMessage.getCursorID());
-					connection.send(getMoreMessage);
-				} else {
-					connection.send(queryMessage);
-					getMore = true;
-				}
-				replyMessage = (ReplyMessage) connection.receive();
-				if (null != replyMessage) {
-					resultIterator = replyMessage.getDocuments().iterator();
-				} else {
-					resultIterator = null;
-				}
-				if (null != resultIterator) {
-					hasNext = resultIterator.hasNext();
-				} else {
-					hasNext = Boolean.FALSE;
+				Connection connection = pool.getConnection();
+				try {
+					if (getMore) {
+						GetMoreMessage getMoreMessage = new GetMoreMessage();
+						getMoreMessage.setFullCollectionName(cursor
+								.getCollection().getFullName());
+						getMoreMessage.setNumberToReturn(numberToReturn);
+						getMoreMessage.setCursorID(replyMessage.getCursorID());
+						connection.send(getMoreMessage);
+					} else {
+						connection.send(queryMessage);
+						getMore = true;
+					}
+					replyMessage = (ReplyMessage) connection.receive();
+					if (null != replyMessage) {
+						resultIterator = replyMessage.getDocuments().iterator();
+					} else {
+						resultIterator = null;
+					}
+					if (null != resultIterator) {
+						hasNext = resultIterator.hasNext();
+					} else {
+						hasNext = Boolean.FALSE;
+					}
+				} finally {
+					connection.close();
 				}
 			} catch (IOException e) {
 				throw new MongoException(e);
@@ -107,7 +116,7 @@ public class CursorIterator implements Iterator<BSONDocument> {
 	}
 
 	@Override
-	public BSONDocument next() {
+	public BSONDocument next() throws IllegalStateException {
 		check();
 		if (hasNext()) {
 			numberReturned++;
@@ -117,29 +126,44 @@ public class CursorIterator implements Iterator<BSONDocument> {
 	}
 
 	@Override
-	public void remove() {
+	public void remove() throws UnsupportedOperationException {
 		throw new UnsupportedOperationException("remove() is not supported yet");
 	}
 
 	public void close() throws IOException {
 		closed = true;
-		try {
-			if (null != replyMessage && replyMessage.getCursorID() != 0) {
+		killCursor();
+	}
+
+	private void killCursor() throws IOException {
+		if (null != replyMessage && replyMessage.getCursorID() != 0) {
+			Connection connection = pool.getConnection();
+			try {
 				KillCursorsMessage message = new KillCursorsMessage();
 				message.setNumberOfCursorIDs(1);
 				List<Long> cursorIdList = new ArrayList<Long>(1);
 				cursorIdList.add(replyMessage.getCursorID());
 				message.setCursorIDs(cursorIdList);
 				connection.send(message);
+			} finally {
+				connection.close();
 			}
-		} finally {
-			connection.close();
 		}
 	}
 
 	private void check() {
 		if (closed) {
-			throw new MongoException("cursor is already closed");
+			throw new IllegalStateException("cursor is already closed");
+		}
+	}
+
+	@Override
+	protected void finalize() throws Throwable {
+		super.finalize();
+		try {
+			killCursor();
+		} catch (Throwable e) {
+			LOG.error("error when kill cursors: ", e);
 		}
 	}
 }

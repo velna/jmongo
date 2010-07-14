@@ -13,7 +13,6 @@ import com.velix.jmongo.ConnectionPool;
 import com.velix.jmongo.Mongo;
 import com.velix.jmongo.MongoAdmin;
 import com.velix.jmongo.MongoDB;
-import com.velix.jmongo.MongoException;
 
 public class MongoImpl implements Mongo {
 
@@ -34,38 +33,33 @@ public class MongoImpl implements Mongo {
 	public MongoImpl(String host, int port, Configuration configuration) {
 		address = new InetSocketAddress(host, port);
 		this.configuration = configuration;
-		PoolableObjectFactory factory = new PoolableConnectionFactory(address);
-		connectionPool = new ConnectionPoolImpl(new GenericObjectPool(factory,
-				this.configuration));
+		PoolableObjectFactory factory = new PoolableConnectionFactory(address,
+				new MongoProtocol());
+		connectionPool = new CommonsConnectionPool(new GenericObjectPool(
+				factory, this.configuration));
+		// connectionPool = new SimpleConnectionPool(address, new
+		// MongoProtocol());
 
 	}
 
 	@Override
-	public MongoDB getDB(String dbName) throws MongoException {
+	public MongoDB getDB(String dbName) throws IllegalStateException {
 		check();
-		try {
-			if (!dbs.containsKey(dbName)) {
-				dbs.putIfAbsent(dbName, new MongoDBImpl(connectionPool, dbName,
-						this));
-			}
-			return dbs.get(dbName);
-		} catch (Exception e) {
-			throw new MongoException(e);
+		if (!dbs.containsKey(dbName)) {
+			dbs.putIfAbsent(dbName, new MongoDBImpl(connectionPool, dbName,
+					this));
 		}
+		return dbs.get(dbName);
 	}
 
 	@Override
-	public void close() throws MongoException {
+	public void close() {
 		closed = true;
-		try {
-			connectionPool.close();
-		} catch (Exception e) {
-			throw new MongoException(e);
-		}
+		connectionPool.close();
 	}
 
 	@Override
-	public MongoAdmin getAdmin() {
+	public MongoAdmin getAdmin() throws IllegalStateException {
 		check();
 		if (null == mongoAdmin) {
 			adminLock.lock();
@@ -82,7 +76,7 @@ public class MongoImpl implements Mongo {
 
 	private void check() {
 		if (closed) {
-			throw new MongoException("mongo is already closed");
+			throw new IllegalStateException("mongo is already closed");
 		}
 	}
 

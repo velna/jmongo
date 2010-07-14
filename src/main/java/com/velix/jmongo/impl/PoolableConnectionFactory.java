@@ -1,17 +1,26 @@
 package com.velix.jmongo.impl;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 
 import org.apache.commons.pool.PoolableObjectFactory;
+import org.apache.log4j.Logger;
 
 import com.velix.jmongo.Connection;
+import com.velix.jmongo.Protocol;
 
 public class PoolableConnectionFactory implements PoolableObjectFactory {
 
-	private InetSocketAddress address;
+	private static final Logger LOG = Logger
+			.getLogger(PoolableConnectionFactory.class);
 
-	public PoolableConnectionFactory(InetSocketAddress address) {
+	private InetSocketAddress address;
+	private Protocol protocol;
+
+	public PoolableConnectionFactory(InetSocketAddress address,
+			Protocol protocol) {
 		this.address = address;
+		this.protocol = protocol;
 	}
 
 	@Override
@@ -22,13 +31,16 @@ public class PoolableConnectionFactory implements PoolableObjectFactory {
 
 	@Override
 	public void destroyObject(Object obj) throws Exception {
-		((Connection) obj).close();
+		try {
+			((Connection) obj).close();
+		} catch (IOException e) {
+			LOG.error("exception when close connection: ", e);
+		}
 	}
 
 	@Override
 	public Object makeObject() throws Exception {
-		Connection connection = new NIOConnection(address,
-				MongoProtocol.PROTOCOL);
+		Connection connection = new NIOConnection(address, protocol);
 		connection.connect();
 		return connection;
 	}

@@ -1,13 +1,11 @@
 package com.velix.jmongo.protocol;
 
 import java.io.IOException;
-import java.io.OutputStream;
 
 import com.velix.bson.BSONDocument;
-import com.velix.bson.io.BSONCodec;
+import com.velix.bson.io.BSONEncoder;
 import com.velix.bson.io.BSONOutputStream;
 import com.velix.bson.util.BSONUtils;
-
 
 public class DeleteMessage implements OutgoingMessage, MongoMessage {
 
@@ -23,15 +21,13 @@ public class DeleteMessage implements OutgoingMessage, MongoMessage {
 	}
 
 	@Override
-	public void write(OutputStream output) throws IOException {
-		BSONOutputStream out = new BSONOutputStream(1024);
+	public void write(BSONOutputStream out) throws IOException {
 		messageHeader.write(out);
 		out.writeInteger(0);
 		out.writeCString(this.fullCollectionName);
 		out.writeInteger(this.flags);
-		out.write(BSONCodec.encode(selector));
+		BSONEncoder.encode(selector, out);
 		out.set(0, out.size());
-		out.writeTo(output);
 	}
 
 	public MessageHeader getMessageHeader() {

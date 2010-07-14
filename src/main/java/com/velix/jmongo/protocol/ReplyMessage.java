@@ -7,6 +7,8 @@ import java.util.List;
 
 import com.velix.bson.BSONDocument;
 import com.velix.bson.io.BSONCodec;
+import com.velix.bson.io.BSONDecoder;
+import com.velix.bson.io.BSONInput;
 import com.velix.bson.io.BSONInputStream;
 
 public class ReplyMessage implements IncomingMessage, MongoMessage {
@@ -33,6 +35,19 @@ public class ReplyMessage implements IncomingMessage, MongoMessage {
 		documents = new ArrayList<BSONDocument>(numberReturned);
 		for (int i = 0; i < numberReturned; i++) {
 			documents.add(BSONCodec.decode(in));
+		}
+	}
+
+	@Override
+	public void read(BSONInput in) throws IOException {
+		messageHeader.read(in);
+		responseFlag = in.readInteger();
+		cursorID = in.readLong();
+		startingFrom = in.readInteger();
+		numberReturned = in.readInteger();
+		documents = new ArrayList<BSONDocument>(numberReturned);
+		for (int i = 0; i < numberReturned; i++) {
+			documents.add(BSONDecoder.decode(in));
 		}
 	}
 

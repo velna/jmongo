@@ -1,5 +1,8 @@
 package com.velix.jmongo.protocol;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public enum OperationCode {
 	/**
 	 * Reply to a client request. responseTo is set
@@ -40,6 +43,13 @@ public enum OperationCode {
 
 	private final int value;
 
+	private final static Map<Integer, OperationCode> TYPE_MAP = new HashMap<Integer, OperationCode>();
+	static {
+		for (OperationCode e : OperationCode.values()) {
+			TYPE_MAP.put(e.value, e);
+		}
+	}
+
 	private OperationCode(int value) {
 		this.value = value;
 	}
@@ -49,12 +59,7 @@ public enum OperationCode {
 	}
 
 	public static OperationCode valueOf(int value) {
-		for (OperationCode code : OperationCode.values()) {
-			if (code.value == value) {
-				return code;
-			}
-		}
-		return null;
+		return TYPE_MAP.get(value);
 	}
 
 }

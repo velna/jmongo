@@ -1,9 +1,9 @@
 package com.velix.jmongo;
 
 public interface Mongo {
-	MongoAdmin getAdmin();
+	MongoAdmin getAdmin() throws IllegalStateException;
 
-	MongoDB getDB(String dbName) throws MongoException;
+	MongoDB getDB(String dbName) throws IllegalStateException;
 
-	void close() throws MongoException;
+	void close();
 }

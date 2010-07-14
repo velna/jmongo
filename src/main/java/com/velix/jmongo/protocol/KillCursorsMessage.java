@@ -1,11 +1,9 @@
 package com.velix.jmongo.protocol;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.List;
 
 import com.velix.bson.io.BSONOutputStream;
-
 
 public class KillCursorsMessage implements OutgoingMessage, MongoMessage {
 
@@ -23,8 +21,7 @@ public class KillCursorsMessage implements OutgoingMessage, MongoMessage {
 	}
 
 	@Override
-	public void write(OutputStream output) throws IOException {
-		BSONOutputStream out = new BSONOutputStream(1024);
+	public void write(BSONOutputStream out) throws IOException {
 		messageHeader.write(out);
 		out.writeInteger(0);
 		out.writeInteger(numberOfCursorIDs);
@@ -34,7 +31,6 @@ public class KillCursorsMessage implements OutgoingMessage, MongoMessage {
 			}
 		}
 		out.set(0, out.size());
-		out.writeTo(output);
 	}
 
 	public int getNumberOfCursorIDs() {

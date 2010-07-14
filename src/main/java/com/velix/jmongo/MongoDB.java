@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.velix.bson.BSONDocument;
 
-
 public interface MongoDB {
 	String getName();
 
@@ -12,13 +11,16 @@ public interface MongoDB {
 
 	MongoCollection getCollection(String collectionName);
 
-	MongoCollection createCollection(String collectionName, BSONDocument options);
+	MongoCollection createCollection(String collectionName, BSONDocument options)
+			throws MongoCommandFailureException;
 
-	boolean dropCollection(String collectionName);
+	boolean dropCollection(String collectionName)
+			throws MongoCommandFailureException;
 
-	CommandResult runCommand(BSONDocument cmd, boolean shouldReply);
+	CommandResult runCommand(BSONDocument cmd, boolean shouldReply)
+			throws MongoCommandFailureException;
 
-	boolean drop();
+	boolean drop() throws MongoCommandFailureException;
 
 	Mongo getMongo();
 }

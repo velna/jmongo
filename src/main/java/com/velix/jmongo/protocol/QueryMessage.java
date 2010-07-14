@@ -1,10 +1,9 @@
 package com.velix.jmongo.protocol;
 
 import java.io.IOException;
-import java.io.OutputStream;
 
 import com.velix.bson.BSONDocument;
-import com.velix.bson.io.BSONCodec;
+import com.velix.bson.io.BSONEncoder;
 import com.velix.bson.io.BSONOutputStream;
 import com.velix.bson.util.BSONUtils;
 
@@ -24,19 +23,17 @@ public class QueryMessage implements OutgoingMessage, MongoMessage {
 	}
 
 	@Override
-	public void write(OutputStream output) throws IOException {
-		BSONOutputStream out = new BSONOutputStream(1024);
+	public void write(BSONOutputStream out) throws IOException {
 		messageHeader.write(out);
 		out.writeInteger(options);
 		out.writeCString(this.fullCollectionName);
 		out.writeInteger(numberToSkip);
 		out.writeInteger(numberToReturn);
-		out.write(BSONCodec.encode(query));
+		BSONEncoder.encode(query, out);
 		if (null != returnFieldSelector) {
-			out.write(BSONCodec.encode(returnFieldSelector));
+			BSONEncoder.encode(returnFieldSelector, out);
 		}
 		out.set(0, out.size());
-		out.writeTo(output);
 	}
 
 	public MessageHeader getMessageHeader() {

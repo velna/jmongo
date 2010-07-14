@@ -1,7 +1,11 @@
 package com.velix.jmongo;
 
-public interface ConnectionPool {
-	Connection getConnection() throws Exception;
+import java.io.IOException;
+import java.util.NoSuchElementException;
 
-	void close() throws Exception;
+public interface ConnectionPool {
+	Connection getConnection() throws IOException, NoSuchElementException,
+			IllegalStateException;
+
+	void close();
 }

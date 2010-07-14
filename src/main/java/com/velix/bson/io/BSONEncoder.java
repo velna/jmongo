@@ -1,10 +1,6 @@
 package com.velix.bson.io;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -20,169 +16,33 @@ import com.velix.bson.JavascriptCodeWS;
 import com.velix.bson.ObjectId;
 import com.velix.bson.Symbol;
 import com.velix.bson.Timestamp;
-import com.velix.bson.Binary.SubType;
 import com.velix.bson.util.BSONUtils;
 
-public class BSONCodec {
+public class BSONEncoder {
+	private static final byte[] EMPTY_DOC = new byte[] { 5, 0 };
 
-	public static BSONDocument decode(byte[] bs) throws IOException {
-		if (null == bs) {
-			return null;
-		}
-		return decode0(new BSONInputStream(new ByteArrayInputStream(bs)));
-	}
-
-	public static BSONDocument decode(InputStream in) throws IOException {
-		if (null == in) {
-			return null;
-		}
-		return decode0(new BSONInputStream(in));
-	}
-
-	private static BSONDocument decode0(BSONInputStream in) throws IOException {
-		in.readInteger();
-		BSONDocument document = new BSONDocument();
-		byte typeValue;
-		while ((typeValue = (byte) in.read()) != 0) {
-			ElementType elementType = ElementType.valueOf(typeValue);
-			if (null == elementType) {
-				throw new IOException("unkown type value[" + typeValue + "]");
-			}
-			String name = in.readCString();
-			Object element = null;
-			switch (elementType) {
-			case ARRAY:
-				BSONDocument array = decode0(in);
-				List<Object> list = new ArrayList<Object>(array.size());
-				for (int i = 0;; i++) {
-					String key = String.valueOf(i);
-					if (array.containsKey(key)) {
-						list.add(array.get(key));
-					} else {
-						break;
-					}
-				}
-				element = list;
-				break;
-			case BINARY:
-				int c = in.readInteger();
-				byte subTypeValue = (byte) in.read();
-				Binary.SubType subType = SubType.valueOf(subTypeValue);
-				if (null == elementType) {
-					throw new IOException("unkown binay sub type value["
-							+ subTypeValue + "]");
-				}
-				byte[] data = new byte[c];
-				if (in.read(data) != c) {
-					throw new IOException("invalid binary data");
-				}
-				element = new Binary(data, subType);
-				break;
-			case BOOLEAN:
-				element = in.read() > 0;
-				break;
-			case EMBEDDED_DOCUMENT:
-				element = decode0(in);
-				break;
-			case FLOATING_POINT:
-				element = Double.longBitsToDouble(in.readLong());
-				break;
-			case INTEGER_32:
-				element = in.readInteger();
-				break;
-			case INTEGER_64:
-				element = in.readLong();
-				break;
-			case JAVASCRIPT_CODE:
-				element = new JavascriptCode(in.readString());
-				break;
-			case JAVASCRIPT_CODE_W_SCOPE:
-				CodeWS codeWS = new CodeWS();
-				in.readInteger();
-				codeWS.setJavascriptCode(in.readString());
-				codeWS.setDocument(decode0(in));
-				element = new JavascriptCodeWS(codeWS);
-				break;
-			case MAX_KEY:
-				element = BSON.MAX_KEY;
-				break;
-			case MIN_KEY:
-				element = BSON.MIN_KEY;
-				break;
-			case NULL:
-				element = null;
-				break;
-			case OBJECT_ID:
-				byte[] oidValue = new byte[12];
-				if (in.read(oidValue) != 12) {
-					throw new IOException("invalid object id");
-				}
-				element = new ObjectId(oidValue);
-				break;
-			case REGULAR_EXPRESSION:
-				String pattern = in.readCString();
-				String flags = in.readCString();
-				int f = 0;
-				if (flags.contains("i")) {
-					f |= Pattern.CASE_INSENSITIVE;
-				}
-				if (flags.contains("m")) {
-					f |= Pattern.MULTILINE;
-				}
-				if (flags.contains("s")) {
-					f |= Pattern.DOTALL;
-				}
-				element = Pattern.compile(pattern, f);
-				break;
-			case SYMBOL:
-				element = new Symbol(in.readString());
-				break;
-			case TIMESTAMP:
-				element = new Timestamp(in.readLong());
-				break;
-			case UTC_DATETIME:
-				element = new Date(in.readLong());
-				break;
-			case UTF8_STRING:
-				element = in.readString();
-				break;
-			default:
-				throw new IOException("decode error");
-			}
-			document.put(name, element);
-		}
-		return document;
-	}
-
-	public static byte[] encode(BSONDocument document) throws IOException {
+	public static void encode(BSONDocument document, BSONOutputStream out)
+			throws IOException {
 		if (null == document) {
-			return new byte[] { 5, 0 };
-		}
-		BSONOutputStream out = new BSONOutputStream(1024);
-		out.writeInteger(0);
-		for (Map.Entry<String, Object> entry : document.entrySet()) {
-			byte[] bs = encodeEntry(entry);
-			if (null != bs) {
-				out.write(bs);
+			out.write(EMPTY_DOC);
+		} else {
+			int i = out.size();
+			out.writeInteger(0);
+			for (Map.Entry<String, Object> entry : document.entrySet()) {
+				encodeEntry(entry, out);
 			}
+			out.write(0);
+			out.set(i, out.size() - i);
 		}
-		out.write(0);
-		out.set(0, out.size());
-		return out.toByteArray();
 	}
 
-	public static void encode(BSONDocument document, OutputStream out)
-			throws IOException {
-		out.write(encode(document));
-	}
-
-	private static byte[] encodeEntry(Map.Entry<String, Object> entry)
-			throws IOException {
+	private static void encodeEntry(Map.Entry<String, Object> entry,
+			BSONOutputStream out) throws IOException {
 		String name = entry.getKey();
 		if (null == name) {
-			return null;
+			// TODO throw an exception ?
+			return;
 		}
-		BSONOutputStream out = new BSONOutputStream(1024);
 
 		Object[] typeInfo = getTypeInfo(entry.getValue());
 		ElementType elementType = (ElementType) typeInfo[0];
@@ -194,7 +54,7 @@ public class BSONCodec {
 		switch (elementType) {
 		case ARRAY:
 		case EMBEDDED_DOCUMENT:
-			out.write(encode((BSONDocument) value));
+			encode((BSONDocument) value, out);
 			break;
 		case BOOLEAN:
 			out.write((Boolean) value ? 1 : 0);
@@ -229,7 +89,9 @@ public class BSONCodec {
 			CodeWS codeWS = (CodeWS) value;
 			String javascriptCode = codeWS.getJavascriptCode();
 			int leng = BSONUtils.stringByteLength(javascriptCode);
-			byte[] docBytes = encode(codeWS.getDocument());
+			BSONOutputStream docOut = new BSONOutputStream(1024);
+			encode(codeWS.getDocument(), docOut);
+			byte[] docBytes = docOut.toByteArray();
 			leng += docBytes.length;
 			out.writeInteger(leng);
 			out.writeString(javascriptCode);
@@ -260,7 +122,6 @@ public class BSONCodec {
 			// TODO: other flags ?
 			break;
 		}
-		return out.toByteArray();
 	}
 
 	private static Object[] getTypeInfo(Object element) throws IOException {
@@ -336,8 +197,6 @@ public class BSONCodec {
 		} else if (element instanceof Pattern) {
 			ret[0] = ElementType.REGULAR_EXPRESSION;
 			ret[1] = element;
-		} else if (element instanceof BSON) {
-			// TODO
 		} else {
 			throw new IOException("unkown type [" + element.getClass() + "]");
 		}

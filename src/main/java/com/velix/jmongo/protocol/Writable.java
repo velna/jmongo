@@ -1,8 +1,9 @@
 package com.velix.jmongo.protocol;
 
 import java.io.IOException;
-import java.io.OutputStream;
+
+import com.velix.bson.io.BSONOutputStream;
 
 public interface Writable {
-	public void write(OutputStream out) throws IOException;
+	public void write(BSONOutputStream out) throws IOException;
 }

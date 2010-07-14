@@ -12,11 +12,11 @@ public class Test {
 		collection.setSafeMode(true);
 		BSONDocument query = new BSONDocument();
 		query.put("name", "velna");
-//		Cursor cursor = collection.find(query);
-//		for (BSONDocument doc : cursor) {
-//			System.out.println(doc);
-//		}
-//		cursor.close();
+		Cursor cursor = collection.find(query);
+		for (BSONDocument doc : cursor) {
+			System.out.println(doc);
+		}
+		cursor.close();
 		collection.save(query);
 		System.out.println(collection.count(new BSONDocument(), null));
 //		System.out.println(db.getCollectionNames());

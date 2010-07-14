@@ -1,7 +1,6 @@
 package com.velix.jmongo.protocol;
 
 import java.io.IOException;
-import java.io.OutputStream;
 
 import com.velix.bson.io.BSONOutputStream;
 
@@ -18,15 +17,13 @@ public class GetMoreMessage implements OutgoingMessage, MongoMessage {
 	}
 
 	@Override
-	public void write(OutputStream output) throws IOException {
-		BSONOutputStream out = new BSONOutputStream(1024);
+	public void write(BSONOutputStream out) throws IOException {
 		messageHeader.write(out);
 		out.writeInteger(0);
 		out.writeCString(this.fullCollectionName);
 		out.writeInteger(this.numberToReturn);
 		out.writeLong(cursorID);
 		out.set(0, out.size());
-		out.writeTo(output);
 	}
 
 	public MessageHeader getMessageHeader() {

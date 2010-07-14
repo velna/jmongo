@@ -32,7 +32,7 @@ public class NIOConnection implements Connection {
 
 	public NIOConnection(InetSocketAddress address, Protocol protocol) {
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("new mongo db connection");
+			LOG.debug("new nio connection");
 		}
 		this.address = address;
 		buffer = ByteBuffer.allocateDirect(4 << 20);

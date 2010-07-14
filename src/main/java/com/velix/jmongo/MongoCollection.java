@@ -7,16 +7,19 @@ import com.velix.bson.BSONDocument;
 public interface MongoCollection {
 	Cursor find(BSONDocument query);
 
-	void save(BSONDocument doc);
+	void save(BSONDocument doc) throws MongoWriteException, MongoException;
 
-	void save(List<BSONDocument> docList);
+	void save(List<BSONDocument> docList) throws MongoWriteException,
+			MongoException;
 
-	void remove(BSONDocument query, boolean singleRemove);
+	void remove(BSONDocument query, boolean singleRemove)
+			throws MongoWriteException, MongoException;
 
 	void update(BSONDocument query, BSONDocument data, boolean upsert,
-			boolean multiUpdate);
+			boolean multiUpdate) throws MongoWriteException, MongoException;
 
-	long count(BSONDocument query, List<String> fields);
+	long count(BSONDocument query, List<String> fields)
+			throws MongoCommandFailureException;
 
 	String getName();
 

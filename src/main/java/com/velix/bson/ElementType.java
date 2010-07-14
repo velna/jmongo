@@ -1,5 +1,8 @@
 package com.velix.bson;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public enum ElementType implements BSON {
 	/**
 	 * Floating point
@@ -76,6 +79,13 @@ public enum ElementType implements BSON {
 
 	private final byte value;
 
+	private final static Map<Byte, ElementType> TYPE_MAP = new HashMap<Byte, ElementType>();
+	static {
+		for (ElementType e : ElementType.values()) {
+			TYPE_MAP.put(e.value, e);
+		}
+	}
+
 	private ElementType(final byte value) {
 		this.value = value;
 	}
@@ -85,11 +95,6 @@ public enum ElementType implements BSON {
 	}
 
 	public static ElementType valueOf(byte value) {
-		for (ElementType e : ElementType.values()) {
-			if (e.value == value) {
-				return e;
-			}
-		}
-		return null;
+		return TYPE_MAP.get(value);
 	}
 }

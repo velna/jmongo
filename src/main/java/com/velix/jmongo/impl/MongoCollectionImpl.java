@@ -11,8 +11,10 @@ import com.velix.jmongo.Connection;
 import com.velix.jmongo.ConnectionPool;
 import com.velix.jmongo.Cursor;
 import com.velix.jmongo.MongoCollection;
+import com.velix.jmongo.MongoCommandFailureException;
 import com.velix.jmongo.MongoDB;
 import com.velix.jmongo.MongoException;
+import com.velix.jmongo.MongoWriteException;
 import com.velix.jmongo.protocol.DeleteMessage;
 import com.velix.jmongo.protocol.InsertMessage;
 import com.velix.jmongo.protocol.OutgoingMessage;
@@ -44,7 +46,8 @@ public class MongoCollectionImpl implements MongoCollection {
 	}
 
 	@Override
-	public long count(BSONDocument query, List<String> fields) {
+	public long count(BSONDocument query, List<String> fields)
+			throws MongoCommandFailureException {
 		BSONDocument cmd = new BSONDocument();
 		cmd.put("count", name);
 		if (null != fields && fields.size() > 0) {
@@ -74,21 +77,24 @@ public class MongoCollectionImpl implements MongoCollection {
 	}
 
 	@Override
-	public void remove(BSONDocument query, boolean singleRemove) {
+	public void remove(BSONDocument query, boolean singleRemove)
+			throws MongoWriteException, MongoException {
 		DeleteMessage msg = new DeleteMessage();
 		msg.setFullCollectionName(fullName);
 		msg.setSelector(query);
 		msg.setSingleRemove(singleRemove);
-		this.sendMessage(msg, false);
+		this.sendMessage(msg, this.safeMode);
 	}
 
 	@Override
-	public void save(BSONDocument doc) {
+	public void save(BSONDocument doc) throws MongoWriteException,
+			MongoException {
 		save(Arrays.asList(doc));
 	}
 
 	@Override
-	public void save(List<BSONDocument> docList) {
+	public void save(List<BSONDocument> docList) throws MongoWriteException,
+			MongoException {
 		InsertMessage msg = new InsertMessage();
 		msg.setDocuments(docList);
 		msg.setFullCollectionName(fullName);
@@ -110,18 +116,18 @@ public class MongoCollectionImpl implements MongoCollection {
 				connection.send(queryMsg);
 				ReplyMessage reply = (ReplyMessage) connection.receive();
 				CommandResult result = new CommandResult(reply.getDocuments());
-				if (!result.isOk() || null != result.get("err")) {
-					throw new MongoException(result.get("err").toString());
+				if (!result.isOk() || null != result.getErrorMessage()) {
+					throw new MongoWriteException(result.getErrorMessage());
 				}
 			}
-		} catch (Exception e) {
-			throw new MongoException(e);
+		} catch (IOException e) {
+			throw new MongoException("", e);
 		} finally {
 			if (null != connection) {
 				try {
 					connection.close();
 				} catch (IOException e) {
-					throw new MongoException(e);
+					throw new MongoException("", e);
 				}
 			}
 		}
@@ -129,7 +135,7 @@ public class MongoCollectionImpl implements MongoCollection {
 
 	@Override
 	public void update(BSONDocument query, BSONDocument data, boolean upsert,
-			boolean multiUpdate) {
+			boolean multiUpdate) throws MongoWriteException, MongoException {
 		UpdateMessage msg = new UpdateMessage();
 		msg.setFullCollectionName(fullName);
 		msg.setSelector(query);

@@ -1,6 +1,5 @@
 package com.velix.bson;
 
-
 public class ObjectId extends AbstractElement<byte[]> {
 
 	private static final long serialVersionUID = 3892785050074060931L;

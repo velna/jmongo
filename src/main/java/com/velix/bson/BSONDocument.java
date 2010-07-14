@@ -1,14 +1,12 @@
 package com.velix.bson;
 
-import java.util.Comparator;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.regex.Pattern;
 
-public class BSONDocument extends TreeMap<String, Object> {
+public class BSONDocument extends LinkedHashMap<String, Object> {
 
 	private static final long serialVersionUID = 8429510414360350473L;
 
@@ -16,15 +14,11 @@ public class BSONDocument extends TreeMap<String, Object> {
 		super();
 	}
 
-	public BSONDocument(Comparator<? super String> comparator) {
-		super(comparator);
+	public BSONDocument(int initialCapacity) {
+		super(initialCapacity);
 	}
 
-	public BSONDocument(Map<? extends String, ? extends Object> m) {
-		super(m);
-	}
-
-	public BSONDocument(SortedMap<String, ? extends Object> m) {
+	public BSONDocument(Map<String, Object> m) {
 		super(m);
 	}
 

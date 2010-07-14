@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.velix.bson.BSONDocument;
 
-
 public class CommandResult {
 
 	private boolean ok;
@@ -21,6 +20,9 @@ public class CommandResult {
 			Double c = (Double) firstDoc.get("ok");
 			ok = null == c || c.longValue() == 1;
 			errorMessage = (String) firstDoc.get("$err");
+			if (null == errorMessage) {
+				errorMessage = (String) firstDoc.get("err");
+			}
 		}
 	}
 

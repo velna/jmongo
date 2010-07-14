@@ -37,50 +37,46 @@ public class CursorImpl implements Cursor {
 	}
 
 	@Override
-	public Cursor fields(BSONDocument fields) {
+	public Cursor fields(BSONDocument fields) throws IllegalStateException {
 		check();
 		this.fields = fields;
 		return this;
 	}
 
 	@Override
-	public Cursor limit(int limit) {
+	public Cursor limit(int limit) throws IllegalStateException {
 		check();
 		this.limit = limit;
 		return this;
 	}
 
 	@Override
-	public Cursor batchSize(int batchSize) {
+	public Cursor batchSize(int batchSize) throws IllegalStateException {
 		check();
 		this.batchSize = batchSize == 1 ? 2 : batchSize;
 		return this;
 	}
 
 	@Override
-	public Cursor skip(int skip) {
+	public Cursor skip(int skip) throws IllegalStateException {
 		check();
 		this.skip = skip;
 		return this;
 	}
 
 	@Override
-	public Cursor sort(BSONDocument sort) {
+	public Cursor sort(BSONDocument sort) throws IllegalStateException {
 		check();
 		this.sort = sort;
 		return this;
 	}
 
 	@Override
-	public Iterator<BSONDocument> iterator() {
+	public Iterator<BSONDocument> iterator() throws IllegalStateException {
 		check();
 		queryStarted = true;
-		try {
-			cursorIterator = new CursorIterator(pool.getConnection(), this);
-			return cursorIterator;
-		} catch (Exception e) {
-			throw new MongoException(e);
-		}
+		cursorIterator = new CursorIterator(pool, this);
+		return cursorIterator;
 	}
 
 	@Override
@@ -92,21 +88,21 @@ public class CursorImpl implements Cursor {
 		try {
 			cursorIterator.close();
 		} catch (IOException e) {
-			throw new MongoException(e);
+			throw new MongoException("exception when close cursor: ", e);
 		}
 	}
 
 	private void check() {
 		if (queryStarted) {
-			throw new MongoException("cursor alread started");
+			throw new IllegalStateException("cursor alread started");
 		}
 		if (closed) {
-			throw new MongoException("cursor alread closed");
+			throw new IllegalStateException("cursor alread closed");
 		}
 	}
 
 	@Override
-	public List<BSONDocument> toList() {
+	public List<BSONDocument> toList() throws IllegalStateException {
 		check();
 		try {
 			List<BSONDocument> ret = new ArrayList<BSONDocument>();
@@ -166,14 +162,16 @@ public class CursorImpl implements Cursor {
 	}
 
 	@Override
-	public Cursor setNoCursorTimeout(boolean noCursorTimeout) {
+	public Cursor setNoCursorTimeout(boolean noCursorTimeout)
+			throws IllegalStateException {
 		check();
 		this.noCursorTimeout = noCursorTimeout;
 		return this;
 	}
 
 	@Override
-	public Cursor setTailableCursor(boolean tailableCursor) {
+	public Cursor setTailableCursor(boolean tailableCursor)
+			throws IllegalStateException {
 		check();
 		this.tailableCursor = tailableCursor;
 		return this;
@@ -190,14 +188,14 @@ public class CursorImpl implements Cursor {
 	}
 
 	@Override
-	public Cursor setAwaitData(boolean awaitData) {
+	public Cursor setAwaitData(boolean awaitData) throws IllegalStateException {
 		check();
 		this.awaitData = awaitData;
 		return this;
 	}
 
 	@Override
-	public Cursor setSlaveOk(boolean slaveOk) {
+	public Cursor setSlaveOk(boolean slaveOk) throws IllegalStateException {
 		check();
 		this.slaveOk = slaveOk;
 		return this;

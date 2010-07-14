@@ -22,16 +22,21 @@ public class BSONOutputStream extends ByteArrayOutputStream {
 	}
 
 	public void writeInteger(int i) throws IOException {
-		byte[] b = new byte[] { (byte) i, (byte) (i >> 8), (byte) (i >> 16),
-				(byte) (i >> 24) };
-		write(b);
+		write(i);
+		write(i >> 8);
+		write(i >> 16);
+		write(i >> 24);
 	}
 
 	public void writeLong(long l) throws IOException {
-		byte[] b = new byte[] { (byte) l, (byte) (l >> 8), (byte) (l >> 16),
-				(byte) (l >> 24), (byte) (l >> 32), (byte) (l >> 40),
-				(byte) (l >> 48), (byte) (l >> 56) };
-		write(b);
+		write((byte) l);
+		write((byte) (l >> 8));
+		write((byte) (l >> 16));
+		write((byte) (l >> 24));
+		write((byte) (l >> 32));
+		write((byte) (l >> 40));
+		write((byte) (l >> 48));
+		write((byte) (l >> 56));
 	}
 
 	public void writeString(String s) throws IOException {

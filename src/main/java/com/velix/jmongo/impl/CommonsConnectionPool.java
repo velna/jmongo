@@ -1,6 +1,7 @@
 package com.velix.jmongo.impl;
 
 import java.io.IOException;
+import java.util.NoSuchElementException;
 
 import org.apache.commons.pool.ObjectPool;
 import org.apache.log4j.Logger;
@@ -11,24 +12,37 @@ import com.velix.jmongo.Protocol;
 import com.velix.jmongo.protocol.IncomingMessage;
 import com.velix.jmongo.protocol.OutgoingMessage;
 
-public class ConnectionPoolImpl implements ConnectionPool {
+public class CommonsConnectionPool implements ConnectionPool {
 	private static final Logger LOG = Logger
-			.getLogger(ConnectionPoolImpl.class);
+			.getLogger(CommonsConnectionPool.class);
 
 	private ObjectPool pool;
 
-	public ConnectionPoolImpl(ObjectPool pool) {
+	public CommonsConnectionPool(ObjectPool pool) {
 		this.pool = pool;
 	}
 
 	@Override
-	public Connection getConnection() throws Exception {
-		return new PooledConnection((Connection) pool.borrowObject());
+	public Connection getConnection() throws IOException,
+			NoSuchElementException, IllegalStateException {
+		try {
+			return new PooledConnection((Connection) pool.borrowObject());
+		} catch (NoSuchElementException e) {
+			throw e;
+		} catch (IllegalStateException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
-	public void close() throws Exception {
-		pool.close();
+	public void close() {
+		try {
+			pool.close();
+		} catch (Exception e) {
+			LOG.error("exception when close connection pool: ", e);
+		}
 	}
 
 	private class PooledConnection implements Connection {
@@ -42,7 +56,7 @@ public class ConnectionPoolImpl implements ConnectionPool {
 		@Override
 		public void close() throws IOException {
 			try {
-				ConnectionPoolImpl.this.pool.returnObject(connection);
+				CommonsConnectionPool.this.pool.returnObject(connection);
 			} catch (IOException e) {
 				throw e;
 			} catch (Exception e) {
