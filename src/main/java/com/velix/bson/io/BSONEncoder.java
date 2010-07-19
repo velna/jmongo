@@ -21,7 +21,7 @@ import com.velix.bson.util.BSONUtils;
 public class BSONEncoder {
 	private static final byte[] EMPTY_DOC = new byte[] { 5, 0 };
 
-	public static void encode(BSONDocument document, BSONOutputStream out)
+	public static void encode(BSONDocument document, BSONOutput out)
 			throws IOException {
 		if (null == document) {
 			out.write(EMPTY_DOC);
@@ -37,7 +37,7 @@ public class BSONEncoder {
 	}
 
 	private static void encodeEntry(Map.Entry<String, Object> entry,
-			BSONOutputStream out) throws IOException {
+			BSONOutput out) throws IOException {
 		String name = entry.getKey();
 		if (null == name) {
 			// TODO throw an exception ?
@@ -89,7 +89,7 @@ public class BSONEncoder {
 			CodeWS codeWS = (CodeWS) value;
 			String javascriptCode = codeWS.getJavascriptCode();
 			int leng = BSONUtils.stringByteLength(javascriptCode);
-			BSONOutputStream docOut = new BSONOutputStream(1024);
+			BSONOutput docOut = new BSONOutput(1024);
 			encode(codeWS.getDocument(), docOut);
 			byte[] docBytes = docOut.toByteArray();
 			leng += docBytes.length;

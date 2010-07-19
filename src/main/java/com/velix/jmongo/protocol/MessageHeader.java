@@ -1,13 +1,11 @@
 package com.velix.jmongo.protocol;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.velix.bson.io.BSONInput;
-import com.velix.bson.io.BSONInputStream;
-import com.velix.bson.io.BSONOutputStream;
+import com.velix.bson.io.BSONOutput;
 
 public final class MessageHeader implements Writable, Readable, Serializable {
 	private static final long serialVersionUID = 8505270142383450097L;
@@ -24,15 +22,6 @@ public final class MessageHeader implements Writable, Readable, Serializable {
 	}
 
 	@Override
-	public void read(InputStream in) throws IOException {
-		BSONInputStream bsonIn = new BSONInputStream(in);
-		messageLength = bsonIn.readInteger();
-		requestID = bsonIn.readInteger();
-		responseTo = bsonIn.readInteger();
-		opCode = OperationCode.valueOf(bsonIn.readInteger());
-	}
-
-	@Override
 	public void read(BSONInput in) throws IOException {
 		messageLength = in.readInteger();
 		requestID = in.readInteger();
@@ -41,7 +30,7 @@ public final class MessageHeader implements Writable, Readable, Serializable {
 	}
 
 	@Override
-	public void write(BSONOutputStream out) throws IOException {
+	public void write(BSONOutput out) throws IOException {
 		out.writeInteger(messageLength);
 		out.writeInteger(requestID);
 		out.writeInteger(responseTo);

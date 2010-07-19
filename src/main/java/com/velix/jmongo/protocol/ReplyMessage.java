@@ -1,15 +1,12 @@
 package com.velix.jmongo.protocol;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.velix.bson.BSONDocument;
-import com.velix.bson.io.BSONCodec;
 import com.velix.bson.io.BSONDecoder;
 import com.velix.bson.io.BSONInput;
-import com.velix.bson.io.BSONInputStream;
 
 public class ReplyMessage implements IncomingMessage, MongoMessage {
 
@@ -23,19 +20,6 @@ public class ReplyMessage implements IncomingMessage, MongoMessage {
 
 	public ReplyMessage() {
 		messageHeader = new MessageHeader(OperationCode.OP_REPLY);
-	}
-
-	public void read(InputStream in) throws IOException {
-		BSONInputStream bsonIn = new BSONInputStream(in);
-		messageHeader.read(in);
-		responseFlag = bsonIn.readInteger();
-		cursorID = bsonIn.readLong();
-		startingFrom = bsonIn.readInteger();
-		numberReturned = bsonIn.readInteger();
-		documents = new ArrayList<BSONDocument>(numberReturned);
-		for (int i = 0; i < numberReturned; i++) {
-			documents.add(BSONCodec.decode(in));
-		}
 	}
 
 	@Override

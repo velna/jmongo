@@ -4,15 +4,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 
-public class BSONOutputStream extends ByteArrayOutputStream {
+public class BSONOutput extends ByteArrayOutputStream {
 
 	private static final String ENCDOING = "UTF-8";
 
-	public BSONOutputStream() {
+	public BSONOutput() {
 		super();
 	}
 
-	public BSONOutputStream(int size) {
+	public BSONOutput(int size) {
 		super(size);
 	}
 

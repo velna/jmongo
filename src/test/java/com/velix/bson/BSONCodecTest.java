@@ -7,11 +7,10 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
-import com.velix.bson.io.BSONCodec;
 import com.velix.bson.io.BSONDecoder;
 import com.velix.bson.io.BSONEncoder;
 import com.velix.bson.io.BSONInput;
-import com.velix.bson.io.BSONOutputStream;
+import com.velix.bson.io.BSONOutput;
 import com.velix.bson.util.HexDump;
 
 public class BSONCodecTest extends TestCase {
@@ -26,35 +25,8 @@ public class BSONCodecTest extends TestCase {
 		super.tearDown();
 	}
 
-	public void _testEncode() throws IOException {
-		BSONDocument doc = new BSONDocument();
-		doc.put("hello", "world");
-		byte[] bs = BSONCodec.encode(doc);
-		HexDump.dump(bs);
-		doc = BSONCodec.decode(bs);
-		System.out.println(doc);
-		bs = BSONCodec.encode(doc);
-		HexDump.dump(bs);
-	}
-
-	public void testEncodeArray() throws IOException {
-		BSONDocument doc = new BSONDocument();
-
-		List<Object> list = new ArrayList<Object>();
-		list.add("awesome");
-		list.add(5.05);
-		list.add(1986);
-		doc.put("BSON", list);
-		byte[] bs = BSONCodec.encode(doc);
-		HexDump.dump(bs);
-		doc = BSONCodec.decode(bs);
-		System.out.println(doc);
-		bs = BSONCodec.encode(doc);
-		HexDump.dump(bs);
-	}
-
 	public void testEncodeArray2() throws IOException {
-		BSONOutputStream out = new BSONOutputStream(1024);
+		BSONOutput out = new BSONOutput(1024);
 		BSONDocument doc = new BSONDocument();
 
 		List<Object> list = new ArrayList<Object>();

@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import com.velix.bson.BSONDocument;
 import com.velix.bson.io.BSONEncoder;
-import com.velix.bson.io.BSONOutputStream;
+import com.velix.bson.io.BSONOutput;
 import com.velix.bson.util.BSONUtils;
 
 public class DeleteMessage implements OutgoingMessage, MongoMessage {
@@ -21,7 +21,7 @@ public class DeleteMessage implements OutgoingMessage, MongoMessage {
 	}
 
 	@Override
-	public void write(BSONOutputStream out) throws IOException {
+	public void write(BSONOutput out) throws IOException {
 		messageHeader.write(out);
 		out.writeInteger(0);
 		out.writeCString(this.fullCollectionName);

@@ -11,7 +11,7 @@ import java.util.List;
 
 import com.velix.bson.BSONDocument;
 import com.velix.bson.io.BSONInput;
-import com.velix.bson.io.BSONOutputStream;
+import com.velix.bson.io.BSONOutput;
 import com.velix.bson.util.BSONUtils;
 import com.velix.jmongo.MongoProtocolException;
 import com.velix.jmongo.Protocol;
@@ -29,9 +29,9 @@ public class MongoProtocol implements Protocol {
 		}
 	};
 
-	private static ThreadLocal<BSONOutputStream> LOCAL_OUT = new ThreadLocal<BSONOutputStream>() {
-		protected BSONOutputStream initialValue() {
-			return new BSONOutputStream(10 << 10);
+	private static ThreadLocal<BSONOutput> LOCAL_OUT = new ThreadLocal<BSONOutput>() {
+		protected BSONOutput initialValue() {
+			return new BSONOutput(10 << 10);
 		}
 	};
 
@@ -105,7 +105,7 @@ public class MongoProtocol implements Protocol {
 	@Override
 	public void send(OutgoingMessage message, SocketChannel channel,
 			Selector selector) throws IOException {
-		BSONOutputStream out = LOCAL_OUT.get();
+		BSONOutput out = LOCAL_OUT.get();
 		out.reset();
 		message.write(out);
 		ByteBuffer buffer = ByteBuffer.wrap(out.toByteArray());
