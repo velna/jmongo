@@ -6,6 +6,7 @@ import java.util.NoSuchElementException;
 
 import com.velix.jmongo.Connection;
 import com.velix.jmongo.ConnectionPool;
+import com.velix.jmongo.MongoAttachment;
 import com.velix.jmongo.Protocol;
 import com.velix.jmongo.protocol.IncomingMessage;
 import com.velix.jmongo.protocol.OutgoingMessage;
@@ -19,6 +20,7 @@ public class SimpleConnectionPool implements ConnectionPool {
 
 	public SimpleConnectionPool(InetSocketAddress address, Protocol protocol) {
 		connection = new NIOConnection(address, protocol);
+		connection.setAttachment(new MongoAttachment());
 		try {
 			connection.connect();
 		} catch (IOException e) {
@@ -72,6 +74,16 @@ public class SimpleConnectionPool implements ConnectionPool {
 		@Override
 		public void setProtocal(Protocol protocol) {
 			connection.setProtocal(protocol);
+		}
+
+		@Override
+		public Object getAttachment() {
+			return connection.getAttachment();
+		}
+
+		@Override
+		public void setAttachment(Object attachment) {
+			connection.setAttachment(attachment);
 		}
 
 	}

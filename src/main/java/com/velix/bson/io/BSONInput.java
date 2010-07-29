@@ -10,10 +10,10 @@ public class BSONInput {
 
 	private long count;
 
-	private ByteArrayOutputStream byteStream = new ByteArrayOutputStream(
-			1024 * 10);
+	private ByteArrayOutputStream byteStream;
 
-	public BSONInput() {
+	public BSONInput(int capacity) {
+		byteStream = new ByteArrayOutputStream(capacity);
 	}
 
 	public void reset(ByteBuffer buffer) {

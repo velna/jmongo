@@ -81,7 +81,7 @@ public class CursorIterator implements Iterator<BSONDocument> {
 			}
 		} else {
 			try {
-				Connection connection = pool.getConnection();
+				Connection connection = getConnection();
 				try {
 					if (getMore) {
 						GetMoreMessage getMoreMessage = new GetMoreMessage();
@@ -137,7 +137,7 @@ public class CursorIterator implements Iterator<BSONDocument> {
 
 	private void killCursor() throws IOException {
 		if (null != replyMessage && replyMessage.getCursorID() != 0) {
-			Connection connection = pool.getConnection();
+			Connection connection = getConnection();
 			try {
 				KillCursorsMessage message = new KillCursorsMessage();
 				message.setNumberOfCursorIDs(1);
@@ -149,6 +149,12 @@ public class CursorIterator implements Iterator<BSONDocument> {
 				connection.close();
 			}
 		}
+	}
+
+	private Connection getConnection() throws IOException {
+		Connection connection = pool.getConnection();
+		this.cursor.getCollection().getDB().authenticate(connection);
+		return connection;
 	}
 
 	private void check() {

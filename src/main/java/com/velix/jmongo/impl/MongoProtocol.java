@@ -25,7 +25,7 @@ public class MongoProtocol implements Protocol {
 
 	private static ThreadLocal<BSONInput> LOCAL_IN = new ThreadLocal<BSONInput>() {
 		protected BSONInput initialValue() {
-			return new BSONInput();
+			return new BSONInput(10 << 10);
 		}
 	};
 
@@ -34,6 +34,12 @@ public class MongoProtocol implements Protocol {
 			return new BSONOutput(10 << 10);
 		}
 	};
+
+//	private static ThreadLocal<ByteBuffer> LOCAL_BUFFER = new ThreadLocal<ByteBuffer>() {
+//		protected ByteBuffer initialValue() {
+//			return ByteBuffer.allocate(10 << 10);
+//		}
+//	};
 
 	@Override
 	public IncomingMessage receive(SocketChannel channel, Selector selector)

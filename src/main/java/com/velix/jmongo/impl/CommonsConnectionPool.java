@@ -27,9 +27,9 @@ public class CommonsConnectionPool implements ConnectionPool {
 			NoSuchElementException, IllegalStateException {
 		try {
 			return new PooledConnection((Connection) pool.borrowObject());
-		} catch (NoSuchElementException e) {
+		} catch (RuntimeException e) {
 			throw e;
-		} catch (IllegalStateException e) {
+		} catch (IOException e) {
 			throw e;
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -87,6 +87,16 @@ public class CommonsConnectionPool implements ConnectionPool {
 		@Override
 		public void setProtocal(Protocol protocol) {
 			connection.setProtocal(protocol);
+		}
+
+		@Override
+		public Object getAttachment() {
+			return connection.getAttachment();
+		}
+
+		@Override
+		public void setAttachment(Object attachment) {
+			connection.setAttachment(attachment);
 		}
 
 	}

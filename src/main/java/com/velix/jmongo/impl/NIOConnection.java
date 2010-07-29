@@ -11,12 +11,13 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
+import com.velix.jmongo.AbstractConnection;
 import com.velix.jmongo.Connection;
 import com.velix.jmongo.Protocol;
 import com.velix.jmongo.protocol.IncomingMessage;
 import com.velix.jmongo.protocol.OutgoingMessage;
 
-public class NIOConnection implements Connection {
+public class NIOConnection extends AbstractConnection implements Connection {
 	private static final Logger LOG = Logger.getLogger(NIOConnection.class);
 
 	private SocketChannel channel;

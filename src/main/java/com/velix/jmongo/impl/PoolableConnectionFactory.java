@@ -7,6 +7,7 @@ import org.apache.commons.pool.PoolableObjectFactory;
 import org.apache.log4j.Logger;
 
 import com.velix.jmongo.Connection;
+import com.velix.jmongo.MongoAttachment;
 import com.velix.jmongo.Protocol;
 
 public class PoolableConnectionFactory implements PoolableObjectFactory {
@@ -41,6 +42,7 @@ public class PoolableConnectionFactory implements PoolableObjectFactory {
 	@Override
 	public Object makeObject() throws Exception {
 		Connection connection = new NIOConnection(address, protocol);
+		connection.setAttachment(new MongoAttachment());
 		connection.connect();
 		return connection;
 	}

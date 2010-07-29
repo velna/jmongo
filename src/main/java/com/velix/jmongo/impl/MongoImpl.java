@@ -39,7 +39,6 @@ public class MongoImpl implements Mongo {
 				factory, this.configuration));
 		// connectionPool = new SimpleConnectionPool(address, new
 		// MongoProtocol());
-
 	}
 
 	@Override
@@ -50,6 +49,14 @@ public class MongoImpl implements Mongo {
 					this));
 		}
 		return dbs.get(dbName);
+	}
+
+	@Override
+	public MongoDB getDB(String dbName, String username, String password)
+			throws IllegalStateException {
+		MongoDB db = getDB(dbName);
+		db.setAuthentication(username, password);
+		return db;
 	}
 
 	@Override

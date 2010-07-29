@@ -7,7 +7,7 @@ public class Test {
 
 	public static void main(String[] args) throws Exception {
 		Mongo mongo = new MongoImpl("127.0.0.1", 27017, new Configuration());
-		MongoDB db = mongo.getDB("goojia");
+		MongoDB db = mongo.getDB("goojia", "sa", "123456");
 		MongoCollection collection = db.getCollection("goojia");
 		collection.setSafeMode(true);
 		BSONDocument query = new BSONDocument();

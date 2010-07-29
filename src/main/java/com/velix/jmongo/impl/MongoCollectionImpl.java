@@ -105,8 +105,9 @@ public class MongoCollectionImpl implements MongoCollection {
 		Connection connection = null;
 		try {
 			connection = pool.getConnection();
+			this.getDB().authenticate(connection);
 			connection.send(msg);
-			if (this.safeMode) {
+			if (checkSafe) {
 				BSONDocument cmd = new BSONDocument();
 				cmd.put("getlasterror", 1);
 				QueryMessage queryMsg = new QueryMessage();

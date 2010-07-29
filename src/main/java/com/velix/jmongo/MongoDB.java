@@ -22,5 +22,10 @@ public interface MongoDB {
 
 	boolean drop() throws MongoCommandFailureException;
 
+	void setAuthentication(String username, String password);
+
+	void authenticate(Connection connection)
+			throws MongoAuthenticationException;
+
 	Mongo getMongo();
 }

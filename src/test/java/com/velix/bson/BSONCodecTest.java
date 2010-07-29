@@ -37,7 +37,7 @@ public class BSONCodecTest extends TestCase {
 		BSONEncoder.encode(doc, out);
 		byte[] bs = out.toByteArray();
 		HexDump.dump(bs);
-		BSONInput in = new BSONInput();
+		BSONInput in = new BSONInput(10 << 10);
 		in.reset(ByteBuffer.wrap(bs));
 		doc = BSONDecoder.decode(in);
 		System.out.println(doc);

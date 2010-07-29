@@ -52,4 +52,18 @@ public interface Connection {
 	 * @return
 	 */
 	public boolean isConnected();
+
+	/**
+	 * set the attachment of this connection
+	 * 
+	 * @param attachment
+	 */
+	public void setAttachment(Object attachment);
+
+	/**
+	 * get the attachment of this connection
+	 * 
+	 * @return
+	 */
+	public Object getAttachment();
 }
