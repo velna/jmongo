@@ -28,6 +28,9 @@ public class CursorImpl implements Cursor {
 	private boolean noCursorTimeout;
 	private boolean awaitData;
 	private boolean slaveOk;
+	private boolean explain;
+	private boolean snapshot;
+	private String hint;
 
 	public CursorImpl(ConnectionPool pool, BSONDocument query,
 			MongoCollection collection) {
@@ -198,6 +201,42 @@ public class CursorImpl implements Cursor {
 	public Cursor setSlaveOk(boolean slaveOk) throws IllegalStateException {
 		check();
 		this.slaveOk = slaveOk;
+		return this;
+	}
+
+	@Override
+	public Cursor explain(boolean explain) throws IllegalStateException {
+		check();
+		this.explain = explain;
+		return this;
+	}
+
+	@Override
+	public boolean isExplain() {
+		return explain;
+	}
+
+	@Override
+	public Cursor snapshot(boolean snapshot) throws IllegalStateException {
+		check();
+		this.snapshot = snapshot;
+		return this;
+	}
+
+	@Override
+	public boolean isSnapshot() {
+		return snapshot;
+	}
+
+	@Override
+	public String getHint() {
+		return hint;
+	}
+
+	@Override
+	public Cursor hint(String hint) throws IllegalStateException {
+		check();
+		this.hint = hint;
 		return this;
 	}
 

@@ -36,7 +36,10 @@ public class CursorIterator implements Iterator<BSONDocument> {
 	public CursorIterator(ConnectionPool pool, Cursor cursor) {
 		this.pool = pool;
 		this.cursor = cursor;
+		prepareQueryMessage();
+	}
 
+	private void prepareQueryMessage() {
 		// cal numberToReturn
 		numberToReturn = cursor.getLimit();
 		if (cursor.getBatchSize() > 0) {
@@ -54,7 +57,27 @@ public class CursorIterator implements Iterator<BSONDocument> {
 				.setFullCollectionName(cursor.getCollection().getFullName());
 		queryMessage.setNumberToReturn(numberToReturn);
 		queryMessage.setNumberToSkip(cursor.getSkip());
-		queryMessage.setQuery(cursor.getQuery());
+		if (cursor.isExplain() || cursor.isSnapshot()
+				|| (null != cursor.getSort() && !cursor.getSort().isEmpty())
+				|| null != cursor.getHint()) {
+			BSONDocument query = new BSONDocument();
+			query.put("query", cursor.getQuery());
+			if (null != cursor.getSort() && !cursor.getSort().isEmpty()) {
+				query.put("orderby", cursor.getSort());
+			}
+			if (cursor.isExplain()) {
+				query.put("$explain", true);
+			}
+			if (cursor.isSnapshot()) {
+				query.put("$snapshot", true);
+			}
+			if (null != cursor.getHint()) {
+				query.put("$hint", cursor.getHint());
+			}
+			queryMessage.setQuery(query);
+		} else {
+			queryMessage.setQuery(cursor.getQuery());
+		}
 		queryMessage.setReturnFieldSelector(cursor.getFields());
 		queryMessage.setTailable(cursor.isTailableCursor());
 		queryMessage.setNoCursorTimeout(cursor.isNoCursorTimeout());

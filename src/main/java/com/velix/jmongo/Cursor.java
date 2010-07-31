@@ -103,6 +103,18 @@ public interface Cursor extends Iterable<BSONDocument> {
 
 	boolean isAwaitData();
 
+	Cursor explain(boolean explain) throws IllegalStateException;
+
+	boolean isExplain();
+
+	Cursor snapshot(boolean snapshot) throws IllegalStateException;
+
+	boolean isSnapshot();
+
+	Cursor hint(String hint) throws IllegalStateException;
+
+	String getHint();
+
 	BSONDocument getQuery();
 
 	MongoCollection getCollection();
