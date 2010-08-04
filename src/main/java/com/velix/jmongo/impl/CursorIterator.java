@@ -12,6 +12,8 @@ import com.velix.bson.BSONDocument;
 import com.velix.jmongo.Connection;
 import com.velix.jmongo.ConnectionPool;
 import com.velix.jmongo.Cursor;
+import com.velix.jmongo.MongoCollectionAware;
+import com.velix.jmongo.MongoDocument;
 import com.velix.jmongo.MongoException;
 import com.velix.jmongo.protocol.GetMoreMessage;
 import com.velix.jmongo.protocol.KillCursorsMessage;
@@ -60,7 +62,7 @@ public class CursorIterator implements Iterator<BSONDocument> {
 		if (cursor.isExplain() || cursor.isSnapshot()
 				|| (null != cursor.getSort() && !cursor.getSort().isEmpty())
 				|| null != cursor.getHint()) {
-			BSONDocument query = new BSONDocument();
+			BSONDocument query = new MongoDocument();
 			query.put("query", cursor.getQuery());
 			if (null != cursor.getSort() && !cursor.getSort().isEmpty()) {
 				query.put("orderby", cursor.getSort());
@@ -117,7 +119,8 @@ public class CursorIterator implements Iterator<BSONDocument> {
 						connection.send(queryMessage);
 						getMore = true;
 					}
-					replyMessage = (ReplyMessage) connection.receive();
+					replyMessage = (ReplyMessage) connection.receive(cursor
+							.getCollection().getObjectClass());
 					if (null != replyMessage) {
 						resultIterator = replyMessage.getDocuments().iterator();
 					} else {
@@ -143,7 +146,12 @@ public class CursorIterator implements Iterator<BSONDocument> {
 		check();
 		if (hasNext()) {
 			numberReturned++;
-			return resultIterator.next();
+			BSONDocument ret = resultIterator.next();
+			if (ret instanceof MongoCollectionAware) {
+				((MongoCollectionAware) ret).setMongoCollection(cursor
+						.getCollection());
+			}
+			return ret;
 		}
 		throw new NoSuchElementException("no more documents");
 	}

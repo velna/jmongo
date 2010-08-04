@@ -3,11 +3,11 @@ package com.velix.bson.io;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 import com.velix.bson.BSON;
 import com.velix.bson.BSONDocument;
+import com.velix.bson.BSONEntry;
 import com.velix.bson.Binary;
 import com.velix.bson.CodeWS;
 import com.velix.bson.ElementType;
@@ -17,6 +17,7 @@ import com.velix.bson.ObjectId;
 import com.velix.bson.Symbol;
 import com.velix.bson.Timestamp;
 import com.velix.bson.util.BSONUtils;
+import com.velix.jmongo.MongoDocument;
 
 public class BSONEncoder {
 	private static final byte[] EMPTY_DOC = new byte[] { 5, 0 };
@@ -28,7 +29,7 @@ public class BSONEncoder {
 		} else {
 			int i = out.size();
 			out.writeInteger(0);
-			for (Map.Entry<String, Object> entry : document.entrySet()) {
+			for (BSONEntry entry : document) {
 				encodeEntry(entry, out);
 			}
 			out.write(0);
@@ -36,8 +37,8 @@ public class BSONEncoder {
 		}
 	}
 
-	private static void encodeEntry(Map.Entry<String, Object> entry,
-			BSONOutput out) throws IOException {
+	private static void encodeEntry(BSONEntry entry, BSONOutput out)
+			throws IOException {
 		String name = entry.getKey();
 		if (null == name) {
 			// TODO throw an exception ?
@@ -132,7 +133,7 @@ public class BSONEncoder {
 		}
 		if (element instanceof List<?>) {
 			ret[0] = ElementType.ARRAY;
-			BSONDocument doc = new BSONDocument();
+			BSONDocument doc = new MongoDocument();
 			List<?> list = (List<?>) element;
 			int i = 0;
 			for (Object obj : list) {

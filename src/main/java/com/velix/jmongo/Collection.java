@@ -4,16 +4,13 @@ import java.util.List;
 
 import com.velix.bson.BSONDocument;
 
-public interface MongoCollection {
+public interface Collection<T extends BSONDocument> {
+
 	Cursor find(BSONDocument query);
 
-	void setObjectClass(Class<? extends BSONDocument> clazz);
+	void save(T doc) throws MongoWriteException, MongoException;
 
-	Class<? extends BSONDocument> getObjectClass();
-
-	void save(BSONDocument doc) throws MongoWriteException, MongoException;
-
-	void save(List<BSONDocument> docList) throws MongoWriteException,
+	void save(List<T> docList) throws MongoWriteException,
 			MongoException;
 
 	void remove(BSONDocument query, boolean singleRemove)

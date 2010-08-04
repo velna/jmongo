@@ -10,7 +10,7 @@ public class Test {
 		MongoDB db = mongo.getDB("goojia", "sa", "123456");
 		MongoCollection collection = db.getCollection("goojia");
 		collection.setSafeMode(true);
-		BSONDocument query = new BSONDocument();
+		BSONDocument query = new MongoDocument();
 		query.put("name", "velna");
 		Cursor cursor = collection.find(query);
 		for (BSONDocument doc : cursor) {
@@ -18,7 +18,7 @@ public class Test {
 		}
 		cursor.close();
 		collection.save(query);
-		System.out.println(collection.count(new BSONDocument(), null));
+		System.out.println(collection.count(new MongoDocument(), null));
 //		System.out.println(db.getCollectionNames());
 		mongo.close();
 	}

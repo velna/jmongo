@@ -17,8 +17,10 @@ public class ReplyMessage implements IncomingMessage, MongoMessage {
 	private int startingFrom;
 	private int numberReturned;
 	private List<BSONDocument> documents;
+	private Class<? extends BSONDocument> clazz;
 
-	public ReplyMessage() {
+	public ReplyMessage(Class<? extends BSONDocument> clazz) {
+		this.clazz = clazz;
 		messageHeader = new MessageHeader(OperationCode.OP_REPLY);
 	}
 
@@ -31,7 +33,7 @@ public class ReplyMessage implements IncomingMessage, MongoMessage {
 		numberReturned = in.readInteger();
 		documents = new ArrayList<BSONDocument>(numberReturned);
 		for (int i = 0; i < numberReturned; i++) {
-			documents.add(BSONDecoder.decode(in));
+			documents.add(BSONDecoder.decode(in, clazz));
 		}
 	}
 

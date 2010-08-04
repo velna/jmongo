@@ -6,6 +6,7 @@ import com.velix.bson.BSONDocument;
 import com.velix.bson.io.BSONEncoder;
 import com.velix.bson.io.BSONOutput;
 import com.velix.bson.util.BSONUtils;
+import com.velix.jmongo.MongoDocument;
 
 public class DeleteMessage implements OutgoingMessage, MongoMessage {
 
@@ -17,7 +18,7 @@ public class DeleteMessage implements OutgoingMessage, MongoMessage {
 
 	public DeleteMessage() {
 		messageHeader = new MessageHeader(OperationCode.OP_DELETE);
-		selector = new BSONDocument();
+		selector = new MongoDocument();
 	}
 
 	@Override

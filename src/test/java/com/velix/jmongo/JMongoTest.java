@@ -26,7 +26,7 @@ public class JMongoTest implements Runnable {
 			try {
 				MongoCollection collection = mongo.getDB("goojia")
 						.getCollection("goojia_common.ppc_map");
-				BSONDocument doc = new BSONDocument();
+				BSONDocument doc = new MongoDocument();
 				doc.put("city", "sh");
 				doc.put("category", 1);
 				doc.put("relate_id", 123);

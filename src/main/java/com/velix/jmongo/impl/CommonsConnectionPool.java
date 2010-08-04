@@ -75,8 +75,8 @@ public class CommonsConnectionPool implements ConnectionPool {
 		}
 
 		@Override
-		public IncomingMessage receive() throws IOException {
-			return connection.receive();
+		public IncomingMessage receive(Class<?> clazz) throws IOException {
+			return connection.receive(clazz);
 		}
 
 		@Override

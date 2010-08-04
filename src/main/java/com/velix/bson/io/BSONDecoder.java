@@ -17,12 +17,21 @@ import com.velix.bson.ObjectId;
 import com.velix.bson.Symbol;
 import com.velix.bson.Timestamp;
 import com.velix.bson.Binary.SubType;
+import com.velix.jmongo.MongoDocument;
 
 public class BSONDecoder {
 
-	public static BSONDocument decode(BSONInput in) throws IOException {
+	public static <D extends BSONDocument> D decode(BSONInput in, Class<D> clazz)
+			throws IOException {
 		in.readInteger();
-		BSONDocument document = new BSONDocument();
+		D document;
+		try {
+			document = clazz.newInstance();
+		} catch (InstantiationException e) {
+			throw new RuntimeException(e);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException(e);
+		}
 		byte typeValue;
 		while ((typeValue = (byte) in.read()) != 0) {
 			ElementType elementType = ElementType.valueOf(typeValue);
@@ -33,7 +42,7 @@ public class BSONDecoder {
 			Object element = null;
 			switch (elementType) {
 			case ARRAY:
-				BSONDocument array = decode(in);
+				BSONDocument array = decode(in, MongoDocument.class);
 				List<Object> list = new ArrayList<Object>(array.size());
 				for (int i = 0;; i++) {
 					String key = String.valueOf(i);
@@ -61,7 +70,7 @@ public class BSONDecoder {
 				element = in.read() > 0;
 				break;
 			case EMBEDDED_DOCUMENT:
-				element = decode(in);
+				element = decode(in, BSONDocument.class);
 				break;
 			case FLOATING_POINT:
 				element = Double.longBitsToDouble(in.readLong());
@@ -79,7 +88,7 @@ public class BSONDecoder {
 				CodeWS codeWS = new CodeWS();
 				in.readInteger();
 				codeWS.setJavascriptCode(in.readString());
-				codeWS.setDocument(decode(in));
+				codeWS.setDocument(decode(in, BSONDocument.class));
 				element = new JavascriptCodeWS(codeWS);
 				break;
 			case MAX_KEY:

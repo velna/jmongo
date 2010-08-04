@@ -13,6 +13,7 @@ import com.velix.bson.BSONDocument;
 import com.velix.bson.io.BSONInput;
 import com.velix.bson.io.BSONOutput;
 import com.velix.bson.util.BSONUtils;
+import com.velix.jmongo.MongoDocument;
 import com.velix.jmongo.MongoProtocolException;
 import com.velix.jmongo.Protocol;
 import com.velix.jmongo.protocol.IncomingMessage;
@@ -35,15 +36,26 @@ public class MongoProtocol implements Protocol {
 		}
 	};
 
-//	private static ThreadLocal<ByteBuffer> LOCAL_BUFFER = new ThreadLocal<ByteBuffer>() {
-//		protected ByteBuffer initialValue() {
-//			return ByteBuffer.allocate(10 << 10);
-//		}
-//	};
+	// private static ThreadLocal<ByteBuffer> LOCAL_BUFFER = new
+	// ThreadLocal<ByteBuffer>() {
+	// protected ByteBuffer initialValue() {
+	// return ByteBuffer.allocate(10 << 10);
+	// }
+	// };
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public IncomingMessage receive(SocketChannel channel, Selector selector)
-			throws IOException {
+	public IncomingMessage receive(SocketChannel channel, Selector selector,
+			Class<?> clazz) throws IOException {
+		Class<? extends BSONDocument> c;
+		if (null == clazz) {
+			c = MongoDocument.class;
+		} else if (BSONDocument.class.isAssignableFrom(clazz)) {
+			c = (Class<? extends BSONDocument>) clazz;
+		} else {
+			throw new MongoProtocolException(BSONDocument.class
+					+ " is not assignable from " + clazz);
+		}
 		try {
 			int nextRemainCount = HEAD_SIZE;
 			ByteBuffer buffer = ByteBuffer.allocate(HEAD_SIZE);
@@ -72,7 +84,7 @@ public class MongoProtocol implements Protocol {
 									// byte[] buf = new byte[nextRemainCount
 									// + HEAD_SIZE];
 									// buffer.get(buf);
-									ReplyMessage message = new ReplyMessage();
+									ReplyMessage message = new ReplyMessage(c);
 									BSONInput in = LOCAL_IN.get();
 									in.reset(buffer);
 									message.read(in);

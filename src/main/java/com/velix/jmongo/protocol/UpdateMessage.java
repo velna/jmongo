@@ -6,6 +6,7 @@ import com.velix.bson.BSONDocument;
 import com.velix.bson.io.BSONEncoder;
 import com.velix.bson.io.BSONOutput;
 import com.velix.bson.util.BSONUtils;
+import com.velix.jmongo.MongoDocument;
 
 public class UpdateMessage implements OutgoingMessage, MongoMessage {
 
@@ -19,8 +20,8 @@ public class UpdateMessage implements OutgoingMessage, MongoMessage {
 
 	public UpdateMessage() {
 		messageHeader = new MessageHeader(OperationCode.OP_UPDATE);
-		this.selector = new BSONDocument();
-		this.update = new BSONDocument();
+		this.selector = new MongoDocument();
+		this.update = new MongoDocument();
 	}
 
 	@Override

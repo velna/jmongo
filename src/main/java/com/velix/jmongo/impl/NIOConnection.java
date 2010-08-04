@@ -109,9 +109,9 @@ public class NIOConnection extends AbstractConnection implements Connection {
 		}
 	}
 
-	public IncomingMessage receive() throws IOException {
+	public IncomingMessage receive(Class<?> clazz) throws IOException {
 		checkConnection();
-		return protocol.receive(channel, selector);
+		return protocol.receive(channel, selector, clazz);
 	}
 
 	@Override

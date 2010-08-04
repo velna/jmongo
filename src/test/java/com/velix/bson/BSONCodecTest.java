@@ -12,6 +12,7 @@ import com.velix.bson.io.BSONEncoder;
 import com.velix.bson.io.BSONInput;
 import com.velix.bson.io.BSONOutput;
 import com.velix.bson.util.HexDump;
+import com.velix.jmongo.MongoDocument;
 
 public class BSONCodecTest extends TestCase {
 
@@ -27,7 +28,7 @@ public class BSONCodecTest extends TestCase {
 
 	public void testEncodeArray2() throws IOException {
 		BSONOutput out = new BSONOutput(1024);
-		BSONDocument doc = new BSONDocument();
+		BSONDocument doc = new MongoDocument();
 
 		List<Object> list = new ArrayList<Object>();
 		list.add("awesome");
@@ -39,7 +40,7 @@ public class BSONCodecTest extends TestCase {
 		HexDump.dump(bs);
 		BSONInput in = new BSONInput(10 << 10);
 		in.reset(ByteBuffer.wrap(bs));
-		doc = BSONDecoder.decode(in);
+		doc = BSONDecoder.decode(in, MongoDocument.class);
 		System.out.println(doc);
 		BSONEncoder.encode(doc, out);
 		bs = out.toByteArray();

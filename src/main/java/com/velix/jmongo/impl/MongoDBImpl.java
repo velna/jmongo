@@ -15,6 +15,7 @@ import com.velix.jmongo.MongoAuthenticationException;
 import com.velix.jmongo.MongoCollection;
 import com.velix.jmongo.MongoCommandFailureException;
 import com.velix.jmongo.MongoDB;
+import com.velix.jmongo.MongoDocument;
 import com.velix.jmongo.MongoException;
 import com.velix.jmongo.protocol.QueryMessage;
 import com.velix.jmongo.protocol.ReplyMessage;
@@ -39,7 +40,7 @@ public class MongoDBImpl implements MongoDB {
 	public MongoCollection createCollection(String collectionName,
 			BSONDocument options) throws MongoCommandFailureException {
 		if (null != options) {
-			BSONDocument cmd = new BSONDocument();
+			BSONDocument cmd = new MongoDocument();
 			cmd.put("create ", collectionName);
 			cmd.putAll(options);
 			CommandResult result = runCommand(cmd, true);
@@ -52,7 +53,7 @@ public class MongoDBImpl implements MongoDB {
 
 	@Override
 	public boolean drop() throws MongoCommandFailureException {
-		BSONDocument cmd = new BSONDocument();
+		BSONDocument cmd = new MongoDocument();
 		cmd.put("dropDatabase ", 1);
 		CommandResult result = runCommand(cmd, true);
 		return result.isOk();
@@ -61,7 +62,7 @@ public class MongoDBImpl implements MongoDB {
 	@Override
 	public boolean dropCollection(String collectionName)
 			throws MongoCommandFailureException {
-		BSONDocument cmd = new BSONDocument();
+		BSONDocument cmd = new MongoDocument();
 		cmd.put("drop", name);
 		CommandResult result = runCommand(cmd, true);
 		return result.isOk();
@@ -138,11 +139,12 @@ public class MongoDBImpl implements MongoDB {
 				queryMessage.setFullCollectionName(name + ".$cmd");
 				queryMessage.setNumberToReturn(-1);
 
-				BSONDocument cmd = new BSONDocument();
+				BSONDocument cmd = new MongoDocument();
 				cmd.put("getnonce", 1);
 				queryMessage.setQuery(cmd);
 				connection.send(queryMessage);
-				ReplyMessage replyMessage = (ReplyMessage) connection.receive();
+				ReplyMessage replyMessage = (ReplyMessage) connection
+						.receive(null);
 				CommandResult result = new CommandResult(replyMessage
 						.getDocuments());
 				if (!result.isOk()) {
@@ -161,7 +163,7 @@ public class MongoDBImpl implements MongoDB {
 				cmd.put("nonce", nonce);
 				cmd.put("key", MongoUtils.md5(nonce + username + password));
 				connection.send(queryMessage);
-				replyMessage = (ReplyMessage) connection.receive();
+				replyMessage = (ReplyMessage) connection.receive(null);
 				result = new CommandResult(replyMessage.getDocuments());
 				if (!result.isOk()) {
 					throw new MongoAuthenticationException(result

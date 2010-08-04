@@ -28,7 +28,7 @@ public interface Connection {
 	 * @return
 	 * @throws IOException
 	 */
-	public IncomingMessage receive() throws IOException;
+	public IncomingMessage receive(Class<?> clazz) throws IOException;
 
 	/**
 	 * try connect, if the connection is already connected, call this method has

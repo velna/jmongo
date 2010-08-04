@@ -9,6 +9,7 @@ import com.velix.bson.BSONDocument;
 import com.velix.jmongo.ConnectionPool;
 import com.velix.jmongo.Cursor;
 import com.velix.jmongo.MongoCollection;
+import com.velix.jmongo.MongoDocument;
 import com.velix.jmongo.MongoException;
 
 public class CursorImpl implements Cursor {
@@ -35,7 +36,7 @@ public class CursorImpl implements Cursor {
 	public CursorImpl(ConnectionPool pool, BSONDocument query,
 			MongoCollection collection) {
 		this.pool = pool;
-		this.query = null == query ? new BSONDocument() : query;
+		this.query = null == query ? new MongoDocument() : query;
 		this.collection = collection;
 	}
 

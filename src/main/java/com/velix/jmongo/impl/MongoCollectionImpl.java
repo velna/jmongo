@@ -13,6 +13,7 @@ import com.velix.jmongo.Cursor;
 import com.velix.jmongo.MongoCollection;
 import com.velix.jmongo.MongoCommandFailureException;
 import com.velix.jmongo.MongoDB;
+import com.velix.jmongo.MongoDocument;
 import com.velix.jmongo.MongoException;
 import com.velix.jmongo.MongoWriteException;
 import com.velix.jmongo.protocol.DeleteMessage;
@@ -29,12 +30,7 @@ public class MongoCollectionImpl implements MongoCollection {
 	private MongoDB db;
 	private String fullName;
 	private boolean safeMode;
-
-	public MongoCollectionImpl(ConnectionPool pool, String fullName) {
-		this.pool = pool;
-		this.name = fullName;
-		this.fullName = fullName;
-	}
+	private Class<? extends BSONDocument> clazz = MongoDocument.class;
 
 	public MongoCollectionImpl(ConnectionPool pool, String collectionName,
 			MongoDB db) {
@@ -48,7 +44,7 @@ public class MongoCollectionImpl implements MongoCollection {
 	@Override
 	public long count(BSONDocument query, List<String> fields)
 			throws MongoCommandFailureException {
-		BSONDocument cmd = new BSONDocument();
+		BSONDocument cmd = new MongoDocument();
 		cmd.put("count", name);
 		if (null != fields && fields.size() > 0) {
 			List<String> fs = new ArrayList<String>(fields.size());
@@ -108,14 +104,14 @@ public class MongoCollectionImpl implements MongoCollection {
 			this.getDB().authenticate(connection);
 			connection.send(msg);
 			if (checkSafe) {
-				BSONDocument cmd = new BSONDocument();
+				BSONDocument cmd = new MongoDocument();
 				cmd.put("getlasterror", 1);
 				QueryMessage queryMsg = new QueryMessage();
 				queryMsg.setFullCollectionName(this.db.getName() + ".$cmd");
 				queryMsg.setNumberToReturn(-1);
 				queryMsg.setQuery(cmd);
 				connection.send(queryMsg);
-				ReplyMessage reply = (ReplyMessage) connection.receive();
+				ReplyMessage reply = (ReplyMessage) connection.receive(null);
 				CommandResult result = new CommandResult(reply.getDocuments());
 				if (!result.isOk() || null != result.getErrorMessage()) {
 					throw new MongoWriteException(result.getErrorMessage());
@@ -166,4 +162,16 @@ public class MongoCollectionImpl implements MongoCollection {
 		return safeMode;
 	}
 
+	@Override
+	public void setObjectClass(Class<? extends BSONDocument> clazz) {
+		if (null == clazz) {
+			throw new IllegalArgumentException("object class can not be null");
+		}
+		this.clazz = clazz;
+	}
+
+	@Override
+	public Class<? extends BSONDocument> getObjectClass() {
+		return clazz;
+	}
 }
