@@ -58,7 +58,7 @@ public class BSONDecoder {
 				int c = in.readInteger();
 				byte subTypeValue = in.read();
 				Binary.SubType subType = SubType.valueOf(subTypeValue);
-				if (null == elementType) {
+				if (null == subType) {
 					throw new IOException("unkown binay sub type value["
 							+ subTypeValue + "]");
 				}

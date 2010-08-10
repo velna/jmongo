@@ -6,7 +6,7 @@
 	<packaging>jar</packaging>
 	<version>1.0-SNAPSHOT</version>
 	<name>jmongo</name>
-	<url>http://code.google.com/p/jmongo/</url>
+	<url>http://github.com/velna/jmongo</url>
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
