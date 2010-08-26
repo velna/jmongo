@@ -22,7 +22,7 @@ import java.util.List;
 import com.velix.bson.BSONDocument;
 
 public interface MongoCollection {
-	Cursor find(BSONDocument query);
+	<T extends BSONDocument> Cursor<T> find(BSONDocument query);
 
 	void setObjectClass(Class<? extends BSONDocument> clazz);
 

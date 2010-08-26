@@ -25,7 +25,7 @@ import com.velix.bson.BSONDocument;
 import com.velix.bson.io.BSONDecoder;
 import com.velix.bson.io.BSONInput;
 
-public class ReplyMessage implements IncomingMessage, MongoMessage {
+public class ReplyMessage<T extends BSONDocument> implements IncomingMessage, MongoMessage {
 
 	private static final long serialVersionUID = -3350216587439425208L;
 	private MessageHeader messageHeader;
@@ -33,10 +33,10 @@ public class ReplyMessage implements IncomingMessage, MongoMessage {
 	private long cursorID;
 	private int startingFrom;
 	private int numberReturned;
-	private List<BSONDocument> documents;
-	private Class<? extends BSONDocument> clazz;
+	private List<T> documents;
+	private Class<T> clazz;
 
-	public ReplyMessage(Class<? extends BSONDocument> clazz) {
+	public ReplyMessage(Class<T> clazz) {
 		this.clazz = clazz;
 		messageHeader = new MessageHeader(OperationCode.OP_REPLY);
 	}
@@ -48,7 +48,7 @@ public class ReplyMessage implements IncomingMessage, MongoMessage {
 		cursorID = in.readLong();
 		startingFrom = in.readInteger();
 		numberReturned = in.readInteger();
-		documents = new ArrayList<BSONDocument>(numberReturned);
+		documents = new ArrayList<T>(numberReturned);
 		for (int i = 0; i < numberReturned; i++) {
 			documents.add(BSONDecoder.decode(in, clazz));
 		}
@@ -90,11 +90,11 @@ public class ReplyMessage implements IncomingMessage, MongoMessage {
 		this.numberReturned = numberReturned;
 	}
 
-	public List<BSONDocument> getDocuments() {
+	public List<T> getDocuments() {
 		return documents;
 	}
 
-	public void setDocuments(List<BSONDocument> documents) {
+	public void setDocuments(List<T> documents) {
 		this.documents = documents;
 	}
 

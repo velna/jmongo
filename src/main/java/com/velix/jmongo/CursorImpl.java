@@ -24,12 +24,12 @@ import java.util.List;
 
 import com.velix.bson.BSONDocument;
 
-public class CursorImpl implements Cursor {
+public class CursorImpl<T extends BSONDocument> implements Cursor<T> {
 
 	private ConnectionPool pool;
 	private BSONDocument query;
 	private MongoCollection collection;
-	private CursorIterator cursorIterator;
+	private CursorIterator<T> cursorIterator;
 	private boolean closed;
 	private boolean queryStarted;
 	private int limit;
@@ -53,45 +53,45 @@ public class CursorImpl implements Cursor {
 	}
 
 	@Override
-	public Cursor fields(BSONDocument fields) throws IllegalStateException {
+	public Cursor<T> fields(BSONDocument fields) throws IllegalStateException {
 		check();
 		this.fields = fields;
 		return this;
 	}
 
 	@Override
-	public Cursor limit(int limit) throws IllegalStateException {
+	public Cursor<T> limit(int limit) throws IllegalStateException {
 		check();
 		this.limit = limit;
 		return this;
 	}
 
 	@Override
-	public Cursor batchSize(int batchSize) throws IllegalStateException {
+	public Cursor<T> batchSize(int batchSize) throws IllegalStateException {
 		check();
 		this.batchSize = batchSize == 1 ? 2 : batchSize;
 		return this;
 	}
 
 	@Override
-	public Cursor skip(int skip) throws IllegalStateException {
+	public Cursor<T> skip(int skip) throws IllegalStateException {
 		check();
 		this.skip = skip;
 		return this;
 	}
 
 	@Override
-	public Cursor sort(BSONDocument sort) throws IllegalStateException {
+	public Cursor<T> sort(BSONDocument sort) throws IllegalStateException {
 		check();
 		this.sort = sort;
 		return this;
 	}
 
 	@Override
-	public Iterator<BSONDocument> iterator() throws IllegalStateException {
+	public Iterator<T> iterator() throws IllegalStateException {
 		check();
 		queryStarted = true;
-		cursorIterator = new CursorIterator(pool, this);
+		cursorIterator = new CursorIterator<T>(pool, this);
 		return cursorIterator;
 	}
 
@@ -118,11 +118,11 @@ public class CursorImpl implements Cursor {
 	}
 
 	@Override
-	public List<BSONDocument> toList() throws IllegalStateException {
+	public List<T> toList() throws IllegalStateException {
 		check();
 		try {
-			List<BSONDocument> ret = new ArrayList<BSONDocument>();
-			Iterator<BSONDocument> i = this.iterator();
+			List<T> ret = new ArrayList<T>();
+			Iterator<T> i = this.iterator();
 			while (i.hasNext()) {
 				ret.add(i.next());
 			}
@@ -178,7 +178,7 @@ public class CursorImpl implements Cursor {
 	}
 
 	@Override
-	public Cursor setNoCursorTimeout(boolean noCursorTimeout)
+	public Cursor<T> setNoCursorTimeout(boolean noCursorTimeout)
 			throws IllegalStateException {
 		check();
 		this.noCursorTimeout = noCursorTimeout;
@@ -186,7 +186,7 @@ public class CursorImpl implements Cursor {
 	}
 
 	@Override
-	public Cursor setTailableCursor(boolean tailableCursor)
+	public Cursor<T> setTailableCursor(boolean tailableCursor)
 			throws IllegalStateException {
 		check();
 		this.tailableCursor = tailableCursor;
@@ -204,21 +204,21 @@ public class CursorImpl implements Cursor {
 	}
 
 	@Override
-	public Cursor setAwaitData(boolean awaitData) throws IllegalStateException {
+	public Cursor<T> setAwaitData(boolean awaitData) throws IllegalStateException {
 		check();
 		this.awaitData = awaitData;
 		return this;
 	}
 
 	@Override
-	public Cursor setSlaveOk(boolean slaveOk) throws IllegalStateException {
+	public Cursor<T> setSlaveOk(boolean slaveOk) throws IllegalStateException {
 		check();
 		this.slaveOk = slaveOk;
 		return this;
 	}
 
 	@Override
-	public Cursor explain(boolean explain) throws IllegalStateException {
+	public Cursor<T> explain(boolean explain) throws IllegalStateException {
 		check();
 		this.explain = explain;
 		return this;
@@ -230,7 +230,7 @@ public class CursorImpl implements Cursor {
 	}
 
 	@Override
-	public Cursor snapshot(boolean snapshot) throws IllegalStateException {
+	public Cursor<T> snapshot(boolean snapshot) throws IllegalStateException {
 		check();
 		this.snapshot = snapshot;
 		return this;
@@ -247,15 +247,15 @@ public class CursorImpl implements Cursor {
 	}
 
 	@Override
-	public Cursor hint(String hint) throws IllegalStateException {
+	public Cursor<T> hint(String hint) throws IllegalStateException {
 		check();
 		this.hint = hint;
 		return this;
 	}
 
 	@Override
-	public Cursor clone() throws CloneNotSupportedException {
-		CursorImpl ret = new CursorImpl(pool, query, collection);
+	public Cursor<T> clone() throws CloneNotSupportedException {
+		CursorImpl<T> ret = new CursorImpl<T>(pool, query, collection);
 		ret.awaitData = this.awaitData;
 		ret.batchSize = this.batchSize;
 		ret.explain = this.explain;

@@ -25,9 +25,9 @@ public class CommandResult {
 
 	private boolean ok;
 	private String errorMessage;
-	private List<BSONDocument> docs;
+	private List<? extends BSONDocument> docs;
 
-	public CommandResult(List<BSONDocument> docs) {
+	public <T extends BSONDocument> CommandResult(List<T> docs) {
 		if (null == docs) {
 			throw new IllegalArgumentException("docs can not be null");
 		}

@@ -31,22 +31,22 @@ import com.velix.jmongo.protocol.KillCursorsMessage;
 import com.velix.jmongo.protocol.QueryMessage;
 import com.velix.jmongo.protocol.ReplyMessage;
 
-public class CursorIterator implements Iterator<BSONDocument> {
+public class CursorIterator<T extends BSONDocument> implements Iterator<T> {
 
 	private final static Logger LOG = Logger.getLogger(CursorIterator.class);
 
 	private Boolean hasNext = null;
-	private ReplyMessage replyMessage;
+	private ReplyMessage<T> replyMessage;
 	private QueryMessage queryMessage;
-	private Iterator<BSONDocument> resultIterator;
+	private Iterator<T> resultIterator;
 	private ConnectionPool pool;
 	private boolean getMore = false;
 	private boolean closed = false;
-	private Cursor cursor;
+	private Cursor<T> cursor;
 	private int numberReturned;
 	private int numberToReturn;
 
-	public CursorIterator(ConnectionPool pool, Cursor cursor) {
+	public CursorIterator(ConnectionPool pool, Cursor<T> cursor) {
 		this.pool = pool;
 		this.cursor = cursor;
 		prepareQueryMessage();
@@ -98,6 +98,7 @@ public class CursorIterator implements Iterator<BSONDocument> {
 		queryMessage.setAwaitData(cursor.isAwaitData());
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public boolean hasNext() throws IllegalStateException {
 		if (closed) {
@@ -130,7 +131,7 @@ public class CursorIterator implements Iterator<BSONDocument> {
 						connection.send(queryMessage);
 						getMore = true;
 					}
-					replyMessage = (ReplyMessage) connection.receive(cursor
+					replyMessage = (ReplyMessage<T>) connection.receive(cursor
 							.getCollection().getObjectClass());
 					if (null != replyMessage) {
 						resultIterator = replyMessage.getDocuments().iterator();
@@ -153,11 +154,11 @@ public class CursorIterator implements Iterator<BSONDocument> {
 	}
 
 	@Override
-	public BSONDocument next() throws IllegalStateException {
+	public T next() throws IllegalStateException {
 		check();
 		if (hasNext()) {
 			numberReturned++;
-			BSONDocument ret = resultIterator.next();
+			T ret = resultIterator.next();
 			if (ret instanceof MongoCollectionAware) {
 				((MongoCollectionAware) ret).setMongoCollection(cursor
 						.getCollection());

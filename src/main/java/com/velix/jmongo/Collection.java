@@ -23,12 +23,11 @@ import com.velix.bson.BSONDocument;
 
 public interface Collection<T extends BSONDocument> {
 
-	Cursor find(BSONDocument query);
+	Cursor<T> find(BSONDocument query);
 
 	void save(T doc) throws MongoWriteException, MongoException;
 
-	void save(List<T> docList) throws MongoWriteException,
-			MongoException;
+	void save(List<T> docList) throws MongoWriteException, MongoException;
 
 	void remove(BSONDocument query, boolean singleRemove)
 			throws MongoWriteException, MongoException;

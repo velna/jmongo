@@ -22,14 +22,14 @@ import java.io.InputStream;
 import java.util.List;
 
 import com.velix.bson.BSONDocument;
-import com.velix.bson.ObjectId;
 
 public class Test {
 
 	public static void main(String[] args) throws Exception {
-//		testGridFS();
-		new ObjectId();
-		new ObjectId();
+		// testGridFS();
+		// new ObjectId();
+		// new ObjectId();
+		test();
 	}
 
 	public static void test() {
@@ -39,8 +39,8 @@ public class Test {
 		MongoCollection collection = db.getCollection("goojia");
 		collection.setSafeMode(true);
 		BSONDocument query = new MongoDocument();
-		query.put("name", "velna");
-		Cursor cursor = collection.find(query);
+		query.put("name", "velna1");
+		Cursor<BSONDocument> cursor = collection.find(query);
 		for (BSONDocument doc : cursor) {
 			System.out.println(doc);
 		}
@@ -57,10 +57,11 @@ public class Test {
 		MongoDB db = mongo.getDB("goojia", "sa", "123456");
 		MongoGridFS gridFS = db.getGridFS("pic");
 		gridFS.remove(new MongoDocument("filename", "连连看.swf"), true);
-		List<BSONDocument> files = gridFS.find(
-				new MongoDocument("filename", "连连看.swf")).toList();
+		Cursor<GridFSFile> cursor = gridFS.find(new MongoDocument("filename",
+				"连连看.swf"));
+		List<GridFSFile> files = cursor.toList();
 		if (files.size() > 0) {
-			GridFSFile file = (GridFSFile) files.get(0);
+			GridFSFile file = files.get(0);
 			FileOutputStream out = new FileOutputStream("d:\\a.swf");
 			InputStream in = file.getInputStream();
 			byte[] buf = new byte[256 * 1024];

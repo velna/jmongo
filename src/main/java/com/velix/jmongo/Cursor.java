@@ -22,7 +22,7 @@ import java.util.List;
 
 import com.velix.bson.BSONDocument;
 
-public interface Cursor extends Iterable<BSONDocument>, Cloneable {
+public interface Cursor<T extends BSONDocument> extends Iterable<T>, Cloneable {
 	/**
 	 * limit the total number of elements of this cursor
 	 * 
@@ -31,7 +31,7 @@ public interface Cursor extends Iterable<BSONDocument>, Cloneable {
 	 * @throws IllegalStateException
 	 *             if this cursor is already closed
 	 */
-	Cursor limit(int limit) throws IllegalStateException;
+	Cursor<T> limit(int limit) throws IllegalStateException;
 
 	int getLimit();
 
@@ -43,7 +43,7 @@ public interface Cursor extends Iterable<BSONDocument>, Cloneable {
 	 * @throws IllegalStateException
 	 *             if this cursor is already closed
 	 */
-	Cursor batchSize(int batchSize) throws IllegalStateException;
+	Cursor<T> batchSize(int batchSize) throws IllegalStateException;
 
 	int getBatchSize();
 
@@ -54,7 +54,7 @@ public interface Cursor extends Iterable<BSONDocument>, Cloneable {
 	 * @return
 	 * @throws IllegalStateException
 	 */
-	Cursor skip(int skip) throws IllegalStateException;
+	Cursor<T> skip(int skip) throws IllegalStateException;
 
 	int getSkip();
 
@@ -65,7 +65,7 @@ public interface Cursor extends Iterable<BSONDocument>, Cloneable {
 	 * @return
 	 * @throws IllegalStateException
 	 */
-	Cursor fields(BSONDocument fields) throws IllegalStateException;
+	Cursor<T> fields(BSONDocument fields) throws IllegalStateException;
 
 	BSONDocument getFields();
 
@@ -76,7 +76,7 @@ public interface Cursor extends Iterable<BSONDocument>, Cloneable {
 	 * @return
 	 * @throws IllegalStateException
 	 */
-	Cursor sort(BSONDocument sort) throws IllegalStateException;
+	Cursor<T> sort(BSONDocument sort) throws IllegalStateException;
 
 	BSONDocument getSort();
 
@@ -87,7 +87,7 @@ public interface Cursor extends Iterable<BSONDocument>, Cloneable {
 	 * @return
 	 * @throws IllegalStateException
 	 */
-	Cursor setTailableCursor(boolean tailableCursor)
+	Cursor<T> setTailableCursor(boolean tailableCursor)
 			throws IllegalStateException;
 
 	boolean isTailableCursor();
@@ -99,12 +99,12 @@ public interface Cursor extends Iterable<BSONDocument>, Cloneable {
 	 * @return
 	 * @throws IllegalStateException
 	 */
-	Cursor setNoCursorTimeout(boolean noCursorTimeout)
+	Cursor<T> setNoCursorTimeout(boolean noCursorTimeout)
 			throws IllegalStateException;
 
 	boolean isNoCursorTimeout();
 
-	Cursor setSlaveOk(boolean slaveOk) throws IllegalStateException;
+	Cursor<T> setSlaveOk(boolean slaveOk) throws IllegalStateException;
 
 	boolean isSlaveOk();
 
@@ -116,19 +116,19 @@ public interface Cursor extends Iterable<BSONDocument>, Cloneable {
 	 * @return
 	 * @throws IllegalStateException
 	 */
-	Cursor setAwaitData(boolean awaitData) throws IllegalStateException;
+	Cursor<T> setAwaitData(boolean awaitData) throws IllegalStateException;
 
 	boolean isAwaitData();
 
-	Cursor explain(boolean explain) throws IllegalStateException;
+	Cursor<T> explain(boolean explain) throws IllegalStateException;
 
 	boolean isExplain();
 
-	Cursor snapshot(boolean snapshot) throws IllegalStateException;
+	Cursor<T> snapshot(boolean snapshot) throws IllegalStateException;
 
 	boolean isSnapshot();
 
-	Cursor hint(String hint) throws IllegalStateException;
+	Cursor<T> hint(String hint) throws IllegalStateException;
 
 	String getHint();
 
@@ -147,10 +147,10 @@ public interface Cursor extends Iterable<BSONDocument>, Cloneable {
 	 * @return
 	 * @throws IllegalStateException
 	 */
-	List<BSONDocument> toList() throws IllegalStateException;
+	List<T> toList() throws IllegalStateException;
 
 	/**
 	 * get the iterator to use over this cursor
 	 */
-	public Iterator<BSONDocument> iterator() throws IllegalStateException;
+	public Iterator<T> iterator() throws IllegalStateException;
 }

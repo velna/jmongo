@@ -149,7 +149,7 @@ public class MongoDBImpl implements MongoDB {
 				cmd.put("getnonce", 1);
 				queryMessage.setQuery(cmd);
 				connection.send(queryMessage);
-				ReplyMessage replyMessage = (ReplyMessage) connection
+				ReplyMessage<?> replyMessage = (ReplyMessage<?>) connection
 						.receive(null);
 				CommandResult result = new CommandResult(replyMessage
 						.getDocuments());
@@ -169,7 +169,7 @@ public class MongoDBImpl implements MongoDB {
 				cmd.put("nonce", nonce);
 				cmd.put("key", MongoUtils.md5(nonce + username + password));
 				connection.send(queryMessage);
-				replyMessage = (ReplyMessage) connection.receive(null);
+				replyMessage = (ReplyMessage<?>) connection.receive(null);
 				result = new CommandResult(replyMessage.getDocuments());
 				if (!result.isOk()) {
 					throw new MongoAuthenticationException(result

@@ -70,8 +70,8 @@ public class MongoCollectionImpl implements MongoCollection {
 	}
 
 	@Override
-	public Cursor find(BSONDocument query) {
-		return new CursorImpl(pool, query, this);
+	public <T extends BSONDocument> Cursor<T> find(BSONDocument query) {
+		return new CursorImpl<T>(pool, query, this);
 	}
 
 	@Override
@@ -118,7 +118,8 @@ public class MongoCollectionImpl implements MongoCollection {
 				queryMsg.setNumberToReturn(-1);
 				queryMsg.setQuery(cmd);
 				connection.send(queryMsg);
-				ReplyMessage reply = (ReplyMessage) connection.receive(null);
+				ReplyMessage<?> reply = (ReplyMessage<?>) connection
+						.receive(null);
 				CommandResult result = new CommandResult(reply.getDocuments());
 				if (!result.isOk() || null != result.getErrorMessage()) {
 					throw new MongoWriteException(result.getErrorMessage());

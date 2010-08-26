@@ -123,9 +123,10 @@ public class NIOConnection extends AbstractConnection implements Connection {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public IncomingMessage receive(Class<?> clazz) throws IOException {
 		checkConnection();
-		return protocol.receive(channel, selector, clazz);
+		return protocol.receive(channel, selector, (Class)clazz);
 	}
 
 	@Override

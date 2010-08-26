@@ -87,7 +87,7 @@ public class MongoGridFSImpl extends MongoCollectionImpl implements MongoGridFS 
 			}
 			file.setMd5(MongoUtils.encodeHex(digest.digest()));
 			file.setLength(length);
-			super.save(Arrays.asList((BSONDocument)file));
+			super.save(Arrays.asList((BSONDocument) file));
 			file.setMongoCollection(this);
 			file.setSaved(true);
 		} catch (IOException e) {
@@ -118,11 +118,12 @@ public class MongoGridFSImpl extends MongoCollectionImpl implements MongoGridFS 
 	public void remove(BSONDocument query, boolean singleRemove)
 			throws MongoWriteException, MongoException {
 		// find files to remove
-		Cursor cursor = this.find(query).fields(new MongoDocument("_id", 1));
+		Cursor<GridFSFile> cursor = this.find(query);
+		cursor.fields(new MongoDocument("_id", 1));
 		if (singleRemove) {
 			cursor.limit(1);
 		}
-		List<BSONDocument> fileList = cursor.toList();
+		List<GridFSFile> fileList = cursor.toList();
 		List<Object> fileIdList = new ArrayList<Object>(fileList.size());
 		for (BSONDocument file : fileList) {
 			fileIdList.add(file.get("_id"));

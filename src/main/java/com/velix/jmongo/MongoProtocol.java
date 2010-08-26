@@ -59,13 +59,14 @@ public class MongoProtocol implements Protocol {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public IncomingMessage receive(SocketChannel channel, Selector selector,
-			Class<?> clazz) throws IOException {
-		Class<? extends BSONDocument> c;
+	public <T extends BSONDocument> IncomingMessage receive(
+			SocketChannel channel, Selector selector, Class<T> clazz)
+			throws IOException {
+		Class<T> c;
 		if (null == clazz) {
-			c = MongoDocument.class;
+			c = (Class<T>) MongoDocument.class;
 		} else if (BSONDocument.class.isAssignableFrom(clazz)) {
-			c = (Class<? extends BSONDocument>) clazz;
+			c = clazz;
 		} else {
 			throw new MongoProtocolException(BSONDocument.class
 					+ " is not assignable from " + clazz);
@@ -98,7 +99,8 @@ public class MongoProtocol implements Protocol {
 									// byte[] buf = new byte[nextRemainCount
 									// + HEAD_SIZE];
 									// buffer.get(buf);
-									ReplyMessage message = new ReplyMessage(c);
+									ReplyMessage<T> message = new ReplyMessage<T>(
+											c);
 									BSONInput in = LOCAL_IN.get();
 									in.reset(buffer);
 									message.read(in);
@@ -118,9 +120,9 @@ public class MongoProtocol implements Protocol {
 		}
 	}
 
-	private void checkMessage(ReplyMessage message) {
+	private <T extends BSONDocument> void checkMessage(ReplyMessage<T> message) {
 		if (BSONUtils.isBitSet(message.getResponseFlag(), 1)) {
-			List<BSONDocument> docList = message.getDocuments();
+			List<T> docList = message.getDocuments();
 			StringBuilder err = new StringBuilder("error: ");
 			if (null != docList) {
 				for (BSONDocument doc : docList) {
