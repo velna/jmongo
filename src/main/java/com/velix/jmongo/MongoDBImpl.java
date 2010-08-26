@@ -1,4 +1,21 @@
-package com.velix.jmongo.impl;
+/**
+ *  JMongo is a mongodb driver writtern in java.
+ *  Copyright (C) 2010  Xiaohu Huang
+ *
+ *  JMongo is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  JMongo is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with JMongo.  If not, see <http://www.gnu.org/licenses/>.
+ */
+package com.velix.jmongo;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -6,17 +23,6 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.velix.bson.BSONDocument;
-import com.velix.jmongo.CommandResult;
-import com.velix.jmongo.Connection;
-import com.velix.jmongo.ConnectionPool;
-import com.velix.jmongo.Mongo;
-import com.velix.jmongo.MongoAttachment;
-import com.velix.jmongo.MongoAuthenticationException;
-import com.velix.jmongo.MongoCollection;
-import com.velix.jmongo.MongoCommandFailureException;
-import com.velix.jmongo.MongoDB;
-import com.velix.jmongo.MongoDocument;
-import com.velix.jmongo.MongoException;
 import com.velix.jmongo.protocol.QueryMessage;
 import com.velix.jmongo.protocol.ReplyMessage;
 import com.velix.jmongo.util.MongoUtils;
@@ -175,5 +181,14 @@ public class MongoDBImpl implements MongoDB {
 			}
 
 		}
+	}
+
+	@Override
+	public MongoGridFS getGridFS(String gridFSName) {
+		if (!collctions.containsKey(gridFSName)) {
+			collctions.putIfAbsent(gridFSName, new MongoGridFSImpl(pool,
+					gridFSName, this));
+		}
+		return (MongoGridFS) collctions.get(gridFSName);
 	}
 }

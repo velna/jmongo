@@ -1,4 +1,21 @@
-package com.velix.jmongo.impl;
+/**
+ *  JMongo is a mongodb driver writtern in java.
+ *  Copyright (C) 2010  Xiaohu Huang
+ *
+ *  JMongo is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  JMongo is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with JMongo.  If not, see <http://www.gnu.org/licenses/>.
+ */
+package com.velix.jmongo;
 
 import java.io.IOException;
 import java.util.NoSuchElementException;
@@ -6,9 +23,6 @@ import java.util.NoSuchElementException;
 import org.apache.commons.pool.ObjectPool;
 import org.apache.log4j.Logger;
 
-import com.velix.jmongo.Connection;
-import com.velix.jmongo.ConnectionPool;
-import com.velix.jmongo.Protocol;
 import com.velix.jmongo.protocol.IncomingMessage;
 import com.velix.jmongo.protocol.OutgoingMessage;
 

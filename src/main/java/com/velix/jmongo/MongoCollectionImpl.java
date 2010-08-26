@@ -1,4 +1,21 @@
-package com.velix.jmongo.impl;
+/**
+ *  JMongo is a mongodb driver writtern in java.
+ *  Copyright (C) 2010  Xiaohu Huang
+ *
+ *  JMongo is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  JMongo is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with JMongo.  If not, see <http://www.gnu.org/licenses/>.
+ */
+package com.velix.jmongo;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -6,16 +23,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.velix.bson.BSONDocument;
-import com.velix.jmongo.CommandResult;
-import com.velix.jmongo.Connection;
-import com.velix.jmongo.ConnectionPool;
-import com.velix.jmongo.Cursor;
-import com.velix.jmongo.MongoCollection;
-import com.velix.jmongo.MongoCommandFailureException;
-import com.velix.jmongo.MongoDB;
-import com.velix.jmongo.MongoDocument;
-import com.velix.jmongo.MongoException;
-import com.velix.jmongo.MongoWriteException;
 import com.velix.jmongo.protocol.DeleteMessage;
 import com.velix.jmongo.protocol.InsertMessage;
 import com.velix.jmongo.protocol.OutgoingMessage;
@@ -25,12 +32,12 @@ import com.velix.jmongo.protocol.UpdateMessage;
 
 public class MongoCollectionImpl implements MongoCollection {
 
-	private ConnectionPool pool;
-	private String name;
-	private MongoDB db;
-	private String fullName;
-	private boolean safeMode;
-	private Class<? extends BSONDocument> clazz = MongoDocument.class;
+	protected ConnectionPool pool;
+	protected String name;
+	protected MongoDB db;
+	protected String fullName;
+	protected boolean safeMode;
+	protected Class<? extends BSONDocument> objectClass = MongoDocument.class;
 
 	public MongoCollectionImpl(ConnectionPool pool, String collectionName,
 			MongoDB db) {
@@ -167,11 +174,11 @@ public class MongoCollectionImpl implements MongoCollection {
 		if (null == clazz) {
 			throw new IllegalArgumentException("object class can not be null");
 		}
-		this.clazz = clazz;
+		this.objectClass = clazz;
 	}
 
 	@Override
 	public Class<? extends BSONDocument> getObjectClass() {
-		return clazz;
+		return objectClass;
 	}
 }

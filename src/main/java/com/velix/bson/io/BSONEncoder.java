@@ -1,3 +1,20 @@
+/**
+ *  JMongo is a mongodb driver writtern in java.
+ *  Copyright (C) 2010  Xiaohu Huang
+ *
+ *  JMongo is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  JMongo is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with JMongo.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.velix.bson.io;
 
 import java.io.IOException;
@@ -33,7 +50,7 @@ public class BSONEncoder {
 				encodeEntry(entry, out);
 			}
 			out.write(0);
-			out.set(i, out.size() - i);
+			out.setInteger(i, out.size() - i);
 		}
 	}
 
@@ -103,7 +120,7 @@ public class BSONEncoder {
 			// empty
 			break;
 		case OBJECT_ID:
-			out.write((byte[]) value);
+			out.write(((ObjectId) value).getValue());
 			break;
 		case REGULAR_EXPRESSION:
 			Pattern pattern = (Pattern) value;

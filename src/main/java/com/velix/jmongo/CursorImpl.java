@@ -1,4 +1,21 @@
-package com.velix.jmongo.impl;
+/**
+ *  JMongo is a mongodb driver writtern in java.
+ *  Copyright (C) 2010  Xiaohu Huang
+ *
+ *  JMongo is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  JMongo is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with JMongo.  If not, see <http://www.gnu.org/licenses/>.
+ */
+package com.velix.jmongo;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -6,11 +23,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.velix.bson.BSONDocument;
-import com.velix.jmongo.ConnectionPool;
-import com.velix.jmongo.Cursor;
-import com.velix.jmongo.MongoCollection;
-import com.velix.jmongo.MongoDocument;
-import com.velix.jmongo.MongoException;
 
 public class CursorImpl implements Cursor {
 
@@ -239,6 +251,25 @@ public class CursorImpl implements Cursor {
 		check();
 		this.hint = hint;
 		return this;
+	}
+
+	@Override
+	public Cursor clone() throws CloneNotSupportedException {
+		CursorImpl ret = new CursorImpl(pool, query, collection);
+		ret.awaitData = this.awaitData;
+		ret.batchSize = this.batchSize;
+		ret.explain = this.explain;
+		ret.fields = this.fields;
+		ret.hint = this.hint;
+		ret.limit = this.limit;
+		ret.noCursorTimeout = this.noCursorTimeout;
+		ret.query = this.query;
+		ret.skip = this.skip;
+		ret.slaveOk = this.slaveOk;
+		ret.snapshot = this.snapshot;
+		ret.sort = this.sort;
+		ret.tailableCursor = this.tailableCursor;
+		return ret;
 	}
 
 }

@@ -1,3 +1,20 @@
+/**
+ *  JMongo is a mongodb driver writtern in java.
+ *  Copyright (C) 2010  Xiaohu Huang
+ *
+ *  JMongo is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  JMongo is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with JMongo.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.velix.jmongo;
 
 import java.io.InputStream;
@@ -6,8 +23,11 @@ import java.util.List;
 
 import com.velix.bson.BSONDocument;
 
-public abstract class GridFSFile extends MongoDocument implements BSONDocument {
+public class GridFSFile extends MongoDocument implements BSONDocument,
+		MongoCollectionAware {
 	private static final long serialVersionUID = -4107111593031139847L;
+
+	public static final long DEFAULT_CHUNCK_SIZE = 256 * 1024;
 
 	private Object id;
 	private long length;
@@ -20,7 +40,37 @@ public abstract class GridFSFile extends MongoDocument implements BSONDocument {
 	private List<String> aliases;
 	private BSONDocument metadata;
 
-	public abstract InputStream getInputStream();
+	private boolean saved;
+
+	private InputStream inputStream;
+	private MongoGridFS gridFS;
+
+	public GridFSFile() {
+		saved = true;
+	}
+
+	public GridFSFile(InputStream inputStream) {
+		saved = false;
+		this.inputStream = inputStream;
+	}
+
+	public synchronized InputStream getInputStream() {
+		if (isSaved()) {
+			if (null == inputStream) {
+				inputStream = new GridFSFileInputStream(this);
+			}
+		}
+		return inputStream;
+
+	}
+
+	public MongoCollection getMongoCollection() {
+		return gridFS;
+	}
+
+	public void setMongoCollection(MongoCollection collection) {
+		this.gridFS = (MongoGridFS) collection;
+	}
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -53,7 +103,7 @@ public abstract class GridFSFile extends MongoDocument implements BSONDocument {
 	}
 
 	public void setId(Object id) {
-		this.id = id;
+		put("_id", id);
 	}
 
 	public long getChunkSize() {
@@ -61,7 +111,7 @@ public abstract class GridFSFile extends MongoDocument implements BSONDocument {
 	}
 
 	public void setChunkSize(long chunkSize) {
-		this.chunkSize = chunkSize;
+		put("chunkSize", chunkSize);
 	}
 
 	public String getFilename() {
@@ -69,7 +119,7 @@ public abstract class GridFSFile extends MongoDocument implements BSONDocument {
 	}
 
 	public void setFilename(String filename) {
-		this.filename = filename;
+		put("filename", filename);
 	}
 
 	public String getContentType() {
@@ -77,7 +127,7 @@ public abstract class GridFSFile extends MongoDocument implements BSONDocument {
 	}
 
 	public void setContentType(String contentType) {
-		this.contentType = contentType;
+		put("contentType", contentType);
 	}
 
 	public List<String> getAliases() {
@@ -85,7 +135,7 @@ public abstract class GridFSFile extends MongoDocument implements BSONDocument {
 	}
 
 	public void setAliases(List<String> aliases) {
-		this.aliases = aliases;
+		put("aliases", aliases);
 	}
 
 	public BSONDocument getMetadata() {
@@ -93,7 +143,7 @@ public abstract class GridFSFile extends MongoDocument implements BSONDocument {
 	}
 
 	public void setMetadata(BSONDocument metadata) {
-		this.metadata = metadata;
+		put("metadata", metadata);
 	}
 
 	public long getLength() {
@@ -106,6 +156,26 @@ public abstract class GridFSFile extends MongoDocument implements BSONDocument {
 
 	public String getMd5() {
 		return md5;
+	}
+
+	public void setLength(long length) {
+		put("length", length);
+	}
+
+	public void setUploadDate(Date uploadDate) {
+		put("uploadDate", uploadDate);
+	}
+
+	public void setMd5(String md5) {
+		put("md5", md5);
+	}
+
+	public boolean isSaved() {
+		return saved;
+	}
+
+	void setSaved(boolean saved) {
+		this.saved = saved;
 	}
 
 }
