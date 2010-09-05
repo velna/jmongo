@@ -18,6 +18,8 @@
 package com.velix.jmongo;
 
 public interface Mongo {
+	public static final int DEFAULT_PORT = 27017;
+
 	MongoAdmin getAdmin() throws IllegalStateException;
 
 	/**
@@ -42,6 +44,8 @@ public interface Mongo {
 	 */
 	MongoDB getDB(String dbName, String username, String password)
 			throws IllegalStateException, MongoAuthenticationException;
+
+	void replicaSetsCheck();
 
 	void close();
 }

@@ -34,6 +34,8 @@ public interface ConnectionPool {
 	Connection getConnection() throws IOException, NoSuchElementException,
 			IllegalStateException;
 
+	void clear();
+
 	/**
 	 * close this connection pool
 	 */

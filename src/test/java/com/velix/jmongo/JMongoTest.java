@@ -31,7 +31,7 @@ public class JMongoTest implements Runnable {
 			throws Exception {
 		Configuration config = new Configuration();
 		config.maxActive = 10;
-		mongo = new MongoImpl("127.0.0.1", 27017, config);
+		mongo = new MongoImpl(config, "127.0.0.1:27017");
 		this.countDownLatch = countDownLatch;
 		this.times = times;
 	}
@@ -56,7 +56,7 @@ public class JMongoTest implements Runnable {
 		System.out.println("a");
 	}
 
-	public static void main(String[] args) throws Exception {
+	public static void _main(String[] args) throws Exception {
 		long start = System.currentTimeMillis();
 		final int count = 1;
 		CountDownLatch countDownLatch = new CountDownLatch(count);
@@ -67,5 +67,20 @@ public class JMongoTest implements Runnable {
 		countDownLatch.await();
 		System.out.println(System.currentTimeMillis() - start);
 		test.mongo.close();
+	}
+
+	public static void main(String[] args) {
+		Configuration config = new Configuration();
+		Mongo mongo = new MongoImpl(config, "127.0.0.1:27018",
+				"127.0.0.1:27017", "127.0.0.1:27019");
+		MongoCollection collection = mongo.getDB("goojia").getCollection(
+				"goojia_common.ppc_map");
+		BSONDocument doc = new MongoDocument();
+		doc.put("city", "sh");
+		doc.put("category", 1);
+		doc.put("relate_id", 123);
+		doc.put("relate_id_2", 0);
+		collection.save(doc);
+		mongo.close();
 	}
 }

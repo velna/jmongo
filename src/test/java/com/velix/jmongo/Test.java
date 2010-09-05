@@ -34,7 +34,7 @@ public class Test {
 
 	public static void test() {
 
-		Mongo mongo = new MongoImpl("127.0.0.1", 27017, new Configuration());
+		Mongo mongo = new MongoImpl(new Configuration(), "127.0.0.1");
 		MongoDB db = mongo.getDB("goojia", "sa", "123456");
 		MongoCollection collection = db.getCollection("goojia");
 		collection.setSafeMode(true);
@@ -53,7 +53,7 @@ public class Test {
 
 	public static void testGridFS() throws Exception {
 
-		Mongo mongo = new MongoImpl("127.0.0.1", 27017, new Configuration());
+		Mongo mongo = new MongoImpl(new Configuration(), "127.0.0.1");
 		MongoDB db = mongo.getDB("goojia", "sa", "123456");
 		MongoGridFS gridFS = db.getGridFS("pic");
 		gridFS.remove(new MongoDocument("filename", "Á¬Á¬¿´.swf"), true);

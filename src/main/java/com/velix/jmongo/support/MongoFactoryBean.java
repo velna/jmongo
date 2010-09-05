@@ -30,7 +30,7 @@ public class MongoFactoryBean extends Configuration implements FactoryBean {
 
 	@Override
 	public Object getObject() throws Exception {
-		Mongo mongo = new MongoImpl(host, port, this);
+		Mongo mongo = new MongoImpl(this, host + ":" + port);
 		return mongo;
 	}
 

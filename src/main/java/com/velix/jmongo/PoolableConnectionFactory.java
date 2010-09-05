@@ -23,7 +23,6 @@ import java.net.InetSocketAddress;
 import org.apache.commons.pool.PoolableObjectFactory;
 import org.apache.log4j.Logger;
 
-
 public class PoolableConnectionFactory implements PoolableObjectFactory {
 
 	private static final Logger LOG = Logger
@@ -32,9 +31,7 @@ public class PoolableConnectionFactory implements PoolableObjectFactory {
 	private InetSocketAddress address;
 	private Protocol protocol;
 
-	public PoolableConnectionFactory(InetSocketAddress address,
-			Protocol protocol) {
-		this.address = address;
+	public PoolableConnectionFactory(Protocol protocol) {
 		this.protocol = protocol;
 	}
 
@@ -70,6 +67,10 @@ public class PoolableConnectionFactory implements PoolableObjectFactory {
 	public boolean validateObject(Object obj) {
 		Connection connection = (Connection) obj;
 		return connection.isConnected();
+	}
+
+	void setAddress(InetSocketAddress address) {
+		this.address = address;
 	}
 
 }

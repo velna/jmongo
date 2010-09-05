@@ -182,4 +182,12 @@ public class MongoCollectionImpl implements MongoCollection {
 	public Class<? extends BSONDocument> getObjectClass() {
 		return objectClass;
 	}
+
+	public void setPool(ConnectionPool pool) {
+		this.pool = pool;
+	}
+
+	public ConnectionPool getPool() {
+		return pool;
+	}
 }

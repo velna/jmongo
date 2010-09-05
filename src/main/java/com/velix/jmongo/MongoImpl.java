@@ -18,39 +18,129 @@
 package com.velix.jmongo;
 
 import java.net.InetSocketAddress;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.apache.commons.pool.PoolableObjectFactory;
 import org.apache.commons.pool.impl.GenericObjectPool;
 
+import com.velix.bson.BSONDocument;
 
 public class MongoImpl implements Mongo {
 
-	private ConnectionPool connectionPool;
+	// private static final Logger LOG = Logger.getLogger(MongoImpl.class);
 
+	private CommonsConnectionPool connectionPool;
+	private PoolableConnectionFactory factory;
 	private boolean closed;
-
 	private final ConcurrentHashMap<String, MongoDB> dbs = new ConcurrentHashMap<String, MongoDB>();
-
 	private MongoAdmin mongoAdmin;
-
 	private final Lock adminLock = new ReentrantLock();
-
 	private InetSocketAddress address;
-
+	private Set<InetSocketAddress> allHosts;
 	private Configuration configuration;
 
-	public MongoImpl(String host, int port, Configuration configuration) {
-		address = new InetSocketAddress(host, port);
+	public MongoImpl(Configuration configuration, String... hosts) {
+		this(configuration, getUniqueHosts(Arrays.asList(hosts)));
+	}
+
+	public MongoImpl(Configuration configuration,
+			InetSocketAddress... addressList) {
+		Set<InetSocketAddress> hostSet = new HashSet<InetSocketAddress>(
+				addressList.length);
+		for (InetSocketAddress as : addressList) {
+			hostSet.add(as);
+		}
 		this.configuration = configuration;
-		PoolableObjectFactory factory = new PoolableConnectionFactory(address,
-				new MongoProtocol());
-		connectionPool = new CommonsConnectionPool(new GenericObjectPool(
-				factory, this.configuration));
-		// connectionPool = new SimpleConnectionPool(address, new
-		// MongoProtocol());
+		findPrimary(hostSet);
+	}
+
+	public MongoImpl(Configuration configuration, Set<InetSocketAddress> hostSet) {
+		this.configuration = configuration;
+		findPrimary(hostSet);
+	}
+
+	private static Set<InetSocketAddress> getUniqueHosts(List<String> hosts) {
+		Set<InetSocketAddress> ret = new HashSet<InetSocketAddress>(hosts
+				.size());
+		for (String host : hosts) {
+			ret.add(parseInetSocketAddress(host));
+		}
+		return ret;
+	}
+
+	private static InetSocketAddress parseInetSocketAddress(String host) {
+		InetSocketAddress inetAddress;
+		int port = DEFAULT_PORT;
+		int i = host.indexOf(':');
+		if (i > 0) {
+			port = Integer.parseInt(host.substring(i + 1).trim());
+			inetAddress = new InetSocketAddress(host.substring(0, i).trim(),
+					port);
+		} else {
+			inetAddress = new InetSocketAddress(host, port);
+		}
+		return inetAddress;
+	}
+
+	public void replicaSetsCheck() {
+		findPrimary(allHosts);
+	}
+
+	private synchronized void findPrimary(Set<InetSocketAddress> hostSet) {
+		if (null == connectionPool) {
+			factory = new PoolableConnectionFactory(new MongoProtocol());
+			connectionPool = new CommonsConnectionPool();
+		}
+		connectionPool.getPoolLock().lock();
+		try {
+			this.allHosts = new HashSet<InetSocketAddress>(hostSet.size());
+			InetSocketAddress lastPrimary = null;
+			for (InetSocketAddress inetAddress : hostSet) {
+				allHosts.add(inetAddress);
+				InetSocketAddress primary = checkPrimary(inetAddress);
+				if (null == primary) {
+					throw new MongoException("can not find master db");
+				}
+				if (null != lastPrimary && !lastPrimary.equals(primary)) {
+					throw new MongoException("multi master db " + lastPrimary
+							+ " and " + primary);
+				} else {
+					lastPrimary = primary;
+				}
+			}
+			if (null == lastPrimary) {
+				throw new MongoException("can not find master db");
+			}
+			this.address = lastPrimary;
+		} finally {
+			connectionPool.getPoolLock().unlock();
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private InetSocketAddress checkPrimary(InetSocketAddress inetAddress) {
+		if (!inetAddress.equals(this.address)) {
+			factory.setAddress(inetAddress);
+			connectionPool.setObjectPool(new GenericObjectPool(factory,
+					this.configuration));
+		}
+		MongoAdmin mongoAdmin = this.getAdmin();
+		BSONDocument command = new MongoDocument("ismaster", 1);
+		CommandResult result = mongoAdmin.runCommand(command, true);
+		List<String> hosts = (List<String>) result.get("hosts");
+		this.allHosts.addAll(getUniqueHosts(hosts));
+		boolean isMaster = (Boolean) result.get("ismaster");
+		if (isMaster) {
+			return inetAddress;
+		} else {
+			String master = (String) result.get("primary");
+			return checkPrimary(parseInetSocketAddress(master));
+		}
 	}
 
 	@Override

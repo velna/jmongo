@@ -19,6 +19,8 @@ package com.velix.jmongo;
 
 import java.io.IOException;
 import java.util.NoSuchElementException;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.pool.ObjectPool;
 import org.apache.log4j.Logger;
@@ -29,34 +31,69 @@ import com.velix.jmongo.protocol.OutgoingMessage;
 public class CommonsConnectionPool implements ConnectionPool {
 	private static final Logger LOG = Logger
 			.getLogger(CommonsConnectionPool.class);
+	private final Lock poolLock = new ReentrantLock();
 
-	private ObjectPool pool;
+	private ObjectPool objectPool;
 
-	public CommonsConnectionPool(ObjectPool pool) {
-		this.pool = pool;
+	public CommonsConnectionPool() {
 	}
 
 	@Override
 	public Connection getConnection() throws IOException,
 			NoSuchElementException, IllegalStateException {
+		poolLock.lock();
 		try {
-			return new PooledConnection((Connection) pool.borrowObject());
+			return new PooledConnection((Connection) objectPool.borrowObject());
 		} catch (RuntimeException e) {
 			throw e;
 		} catch (IOException e) {
 			throw e;
 		} catch (Exception e) {
 			throw new RuntimeException(e);
+		} finally {
+			poolLock.unlock();
+		}
+	}
+
+	@Override
+	public void clear() {
+		try {
+			if (null != objectPool) {
+				objectPool.clear();
+			}
+		} catch (Exception e) {
+			LOG.error("exception when clear connection pool: ", e);
 		}
 	}
 
 	@Override
 	public void close() {
 		try {
-			pool.close();
+			if (null != objectPool) {
+				objectPool.close();
+			}
 		} catch (Exception e) {
 			LOG.error("exception when close connection pool: ", e);
 		}
+	}
+
+	public ObjectPool getObjectPool() {
+		return objectPool;
+	}
+
+	public void setObjectPool(ObjectPool objectPool) {
+		try {
+			if (null != this.objectPool) {
+				this.objectPool.close();
+			}
+		} catch (Exception e) {
+			LOG.error("exception when close connection pool: ", e);
+		}
+		this.objectPool = objectPool;
+	}
+
+	public Lock getPoolLock() {
+		return poolLock;
 	}
 
 	private class PooledConnection implements Connection {
@@ -70,7 +107,9 @@ public class CommonsConnectionPool implements ConnectionPool {
 		@Override
 		public void close() throws IOException {
 			try {
-				CommonsConnectionPool.this.pool.returnObject(connection);
+				if (null != objectPool) {
+					objectPool.returnObject(connection);
+				}
 			} catch (IOException e) {
 				throw e;
 			} catch (Exception e) {

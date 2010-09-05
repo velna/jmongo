@@ -42,6 +42,10 @@ public class SimpleConnectionPool implements ConnectionPool {
 	}
 
 	@Override
+	public void clear() {
+	}
+
+	@Override
 	public void close() {
 
 	}

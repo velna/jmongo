@@ -129,6 +129,11 @@ public class MongoDocument implements BSONDocument {
 		return new BSONEntryIterator();
 	}
 
+	@Override
+	public String toString() {
+		return data.toString();
+	}
+
 	private class BSONEntryIterator implements Iterator<BSONEntry> {
 
 		private Iterator<Map.Entry<String, Object>> i = data.entrySet()
