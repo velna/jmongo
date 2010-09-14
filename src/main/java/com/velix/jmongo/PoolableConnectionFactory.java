@@ -28,10 +28,12 @@ public class PoolableConnectionFactory implements PoolableObjectFactory {
 	private static final Logger LOG = Logger
 			.getLogger(PoolableConnectionFactory.class);
 
-	private InetSocketAddress address;
-	private Protocol protocol;
+	private final InetSocketAddress address;
+	private final Protocol protocol;
 
-	public PoolableConnectionFactory(Protocol protocol) {
+	public PoolableConnectionFactory(InetSocketAddress address,
+			Protocol protocol) {
+		this.address = address;
 		this.protocol = protocol;
 	}
 
@@ -69,8 +71,8 @@ public class PoolableConnectionFactory implements PoolableObjectFactory {
 		return connection.isConnected();
 	}
 
-	void setAddress(InetSocketAddress address) {
-		this.address = address;
+	public Protocol getProtocol() {
+		return protocol;
 	}
 
 }

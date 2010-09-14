@@ -19,8 +19,6 @@ package com.velix.jmongo;
 
 import java.io.IOException;
 import java.util.NoSuchElementException;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.pool.ObjectPool;
 import org.apache.log4j.Logger;
@@ -31,27 +29,21 @@ import com.velix.jmongo.protocol.OutgoingMessage;
 public class CommonsConnectionPool implements ConnectionPool {
 	private static final Logger LOG = Logger
 			.getLogger(CommonsConnectionPool.class);
-	private final Lock poolLock = new ReentrantLock();
+	private final ObjectPool objectPool;
 
-	private ObjectPool objectPool;
-
-	public CommonsConnectionPool() {
+	public CommonsConnectionPool(ObjectPool objectPool) {
+		this.objectPool = objectPool;
 	}
 
 	@Override
-	public Connection getConnection() throws IOException,
-			NoSuchElementException, IllegalStateException {
-		poolLock.lock();
+	public Connection getConnection() throws NoSuchElementException,
+			IllegalStateException {
 		try {
 			return new PooledConnection((Connection) objectPool.borrowObject());
 		} catch (RuntimeException e) {
 			throw e;
-		} catch (IOException e) {
-			throw e;
 		} catch (Exception e) {
 			throw new RuntimeException(e);
-		} finally {
-			poolLock.unlock();
 		}
 	}
 
@@ -75,25 +67,6 @@ public class CommonsConnectionPool implements ConnectionPool {
 		} catch (Exception e) {
 			LOG.error("exception when close connection pool: ", e);
 		}
-	}
-
-	public ObjectPool getObjectPool() {
-		return objectPool;
-	}
-
-	public void setObjectPool(ObjectPool objectPool) {
-		try {
-			if (null != this.objectPool) {
-				this.objectPool.close();
-			}
-		} catch (Exception e) {
-			LOG.error("exception when close connection pool: ", e);
-		}
-		this.objectPool = objectPool;
-	}
-
-	public Lock getPoolLock() {
-		return poolLock;
 	}
 
 	private class PooledConnection implements Connection {

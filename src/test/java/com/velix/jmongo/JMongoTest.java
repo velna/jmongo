@@ -69,7 +69,7 @@ public class JMongoTest implements Runnable {
 		test.mongo.close();
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		Configuration config = new Configuration();
 		Mongo mongo = new MongoImpl(config, "127.0.0.1:27018",
 				"127.0.0.1:27017", "127.0.0.1:27019");
@@ -79,6 +79,13 @@ public class JMongoTest implements Runnable {
 		doc.put("city", "sh");
 		doc.put("category", 1);
 		doc.put("relate_id", 123);
+		doc.put("relate_id_2", 0);
+		collection.save(doc);
+		Thread.sleep(20000);
+		doc = new MongoDocument();
+		doc.put("city", "bj");
+		doc.put("category", 12);
+		doc.put("relate_id", 12344);
 		doc.put("relate_id_2", 0);
 		collection.save(doc);
 		mongo.close();

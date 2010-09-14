@@ -19,6 +19,7 @@ package com.velix.jmongo;
 
 import java.net.InetSocketAddress;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,7 +35,7 @@ public class MongoImpl implements Mongo {
 
 	// private static final Logger LOG = Logger.getLogger(MongoImpl.class);
 
-	private CommonsConnectionPool connectionPool;
+	private final DelegatedConnectionPool connectionPool;
 	private PoolableConnectionFactory factory;
 	private boolean closed;
 	private final ConcurrentHashMap<String, MongoDB> dbs = new ConcurrentHashMap<String, MongoDB>();
@@ -55,16 +56,21 @@ public class MongoImpl implements Mongo {
 		for (InetSocketAddress as : addressList) {
 			hostSet.add(as);
 		}
+		connectionPool = new DelegatedConnectionPool();
 		this.configuration = configuration;
 		findPrimary(hostSet);
 	}
 
 	public MongoImpl(Configuration configuration, Set<InetSocketAddress> hostSet) {
+		connectionPool = new DelegatedConnectionPool();
 		this.configuration = configuration;
 		findPrimary(hostSet);
 	}
 
 	private static Set<InetSocketAddress> getUniqueHosts(List<String> hosts) {
+		if (null == hosts) {
+			return Collections.emptySet();
+		}
 		Set<InetSocketAddress> ret = new HashSet<InetSocketAddress>(hosts
 				.size());
 		for (String host : hosts) {
@@ -92,19 +98,20 @@ public class MongoImpl implements Mongo {
 	}
 
 	private synchronized void findPrimary(Set<InetSocketAddress> hostSet) {
-		if (null == connectionPool) {
-			factory = new PoolableConnectionFactory(new MongoProtocol());
-			connectionPool = new CommonsConnectionPool();
-		}
 		connectionPool.getPoolLock().lock();
+		connectionPool.closeDelegate();
+		SimpleConnectionPool delegate = new SimpleConnectionPool(
+				new MongoProtocol());
+		connectionPool.setDelegate(delegate);
 		try {
 			this.allHosts = new HashSet<InetSocketAddress>(hostSet.size());
 			InetSocketAddress lastPrimary = null;
 			for (InetSocketAddress inetAddress : hostSet) {
 				allHosts.add(inetAddress);
-				InetSocketAddress primary = checkPrimary(inetAddress);
-				if (null == primary) {
-					throw new MongoException("can not find master db");
+				InetSocketAddress primary = checkPrimary(inetAddress, delegate);
+				if (null == primary || primary.equals(lastPrimary)) {
+					// throw new MongoException("can not find master db");
+					continue;
 				}
 				if (null != lastPrimary && !lastPrimary.equals(primary)) {
 					throw new MongoException("multi master db " + lastPrimary
@@ -117,29 +124,36 @@ public class MongoImpl implements Mongo {
 				throw new MongoException("can not find master db");
 			}
 			this.address = lastPrimary;
+			factory = new PoolableConnectionFactory(this.address,
+					new MongoProtocol());
+			connectionPool.setDelegate(new CommonsConnectionPool(
+					new GenericObjectPool(factory, this.configuration)));
 		} finally {
 			connectionPool.getPoolLock().unlock();
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	private InetSocketAddress checkPrimary(InetSocketAddress inetAddress) {
+	private InetSocketAddress checkPrimary(InetSocketAddress inetAddress,
+			SimpleConnectionPool delegate) {
 		if (!inetAddress.equals(this.address)) {
-			factory.setAddress(inetAddress);
-			connectionPool.setObjectPool(new GenericObjectPool(factory,
-					this.configuration));
+			delegate.setAddress(inetAddress);
 		}
 		MongoAdmin mongoAdmin = this.getAdmin();
 		BSONDocument command = new MongoDocument("ismaster", 1);
-		CommandResult result = mongoAdmin.runCommand(command, true);
-		List<String> hosts = (List<String>) result.get("hosts");
-		this.allHosts.addAll(getUniqueHosts(hosts));
-		boolean isMaster = (Boolean) result.get("ismaster");
-		if (isMaster) {
-			return inetAddress;
-		} else {
-			String master = (String) result.get("primary");
-			return checkPrimary(parseInetSocketAddress(master));
+		try {
+			CommandResult result = mongoAdmin.runCommand(command, true);
+			List<String> hosts = (List<String>) result.get("hosts");
+			this.allHosts.addAll(getUniqueHosts(hosts));
+			boolean isMaster = (Boolean) result.get("ismaster");
+			if (isMaster) {
+				return inetAddress;
+			} else {
+				String master = (String) result.get("primary");
+				return checkPrimary(parseInetSocketAddress(master), delegate);
+			}
+		} catch (Exception e) {
+			return null;
 		}
 	}
 

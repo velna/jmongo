@@ -21,24 +21,16 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.NoSuchElementException;
 
-import com.velix.jmongo.protocol.IncomingMessage;
-import com.velix.jmongo.protocol.OutgoingMessage;
-
 public class SimpleConnectionPool implements ConnectionPool {
 
-	private Connection connection;
+	private InetSocketAddress address;
+	private Protocol protocol;
 
 	// private ConcurrentLinkedQueue<Connection> freeConnections = new
 	// ConcurrentLinkedQueue<Connection>();
 
-	public SimpleConnectionPool(InetSocketAddress address, Protocol protocol) {
-		connection = new NIOConnection(address, protocol);
-		connection.setAttachment(new MongoAttachment());
-		try {
-			connection.connect();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public SimpleConnectionPool(Protocol protocol) {
+		this.protocol = protocol;
 	}
 
 	@Override
@@ -53,56 +45,18 @@ public class SimpleConnectionPool implements ConnectionPool {
 	@Override
 	public Connection getConnection() throws IOException,
 			NoSuchElementException, IllegalStateException {
-		return new PooledConnection(connection);
+		Connection connection = new NIOConnection(address, protocol);
+		connection.setAttachment(new MongoAttachment());
+		connection.connect();
+		return connection;
 	}
 
-	private class PooledConnection implements Connection {
+	public InetSocketAddress getAddress() {
+		return address;
+	}
 
-		private Connection connection;
-
-		public PooledConnection(Connection connection) {
-			this.connection = connection;
-		}
-
-		@Override
-		public void close() throws IOException {
-		}
-
-		@Override
-		public void connect() throws IOException {
-			connection.connect();
-		}
-
-		@Override
-		public boolean isConnected() {
-			return connection.isConnected();
-		}
-
-		@Override
-		public IncomingMessage receive(Class<?> clazz) throws IOException {
-			return connection.receive(clazz);
-		}
-
-		@Override
-		public void send(OutgoingMessage message) throws IOException {
-			connection.send(message);
-		}
-
-		@Override
-		public void setProtocal(Protocol protocol) {
-			connection.setProtocal(protocol);
-		}
-
-		@Override
-		public Object getAttachment() {
-			return connection.getAttachment();
-		}
-
-		@Override
-		public void setAttachment(Object attachment) {
-			connection.setAttachment(attachment);
-		}
-
+	public void setAddress(InetSocketAddress address) {
+		this.address = address;
 	}
 
 }
